@@ -10,6 +10,7 @@ from gridfs import GridFS
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
 
+from repoze.bfg.security import authenticated_userid
 from repoze.bfg.settings import get_settings
 
 from lumin.son import ColanderNullTransformer
@@ -58,6 +59,7 @@ class RootFactory(object):
             uri=settings['db_uri'])[settings['db_name']]
         self.db.add_son_manipulator(ColanderNullTransformer())
         self.fs = GridFS(self.db)
+        self.logged_in = authenticated_userid(request)
         #self.mc = memcache.Client(settings['mc_host'])
 
 
