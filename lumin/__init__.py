@@ -3,9 +3,15 @@ import unicodedata
 
 import pymongo
 from pymongo.errors import DuplicateKeyError
+from pymongo.son_manipulator import AutoReference
+from pymongo.son_manipulator import NamespaceInjector
 from gridfs import GridFS 
 
-#import memcache
+memcache = None
+try:
+    import memcache
+except ImportError:
+    pass
 
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
@@ -58,8 +64,12 @@ class RootFactory(object):
         self.db = pymongo.Connection.from_uri(
             uri=settings['db_uri'])[settings['db_name']]
         self.db.add_son_manipulator(ColanderNullTransformer())
+        if settings['autoreference']:
+            self.db.add_son_manipulator(NamespaceInjector())
+            self.db.add_son_manipulator(AutoReference(self.db))
         self.fs = GridFS(self.db)
         self.logged_in = authenticated_userid(request)
-        #self.mc = memcache.Client(settings['mc_host'])
-
+        ## TODO: check and make sure that the mc host is a valid hoststring
+        if settings['mc_host'] and memcache:
+            self.mc = memcache.Client(settings['mc_host'])
 
