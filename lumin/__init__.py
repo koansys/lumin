@@ -64,12 +64,12 @@ class RootFactory(object):
         self.db = pymongo.Connection.from_uri(
             uri=settings['db_uri'])[settings['db_name']]
         self.db.add_son_manipulator(ColanderNullTransformer())
-        if settings['autoreference']:
+        if settings.get('autoreference', None):
             self.db.add_son_manipulator(NamespaceInjector())
             self.db.add_son_manipulator(AutoReference(self.db))
         self.fs = GridFS(self.db)
         self.logged_in = authenticated_userid(request)
         ## TODO: check and make sure that the mc host is a valid hoststring
-        if settings['mc_host'] and memcache:
+        if settings.get('mc_host', None) and memcache:
             self.mc = memcache.Client(settings['mc_host'])
 
