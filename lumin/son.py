@@ -32,7 +32,8 @@ class ColanderNullTransformer(SONManipulator):
                 continue
             if isinstance(v, dict) and v != SENTINEL:
                 for (key, value) in v.items():
-                    self.recursive_in(value)
+                    if isinstance(value, dict):
+                        self.recursive_in(value)
 
     def recursive_out(self, subson):
         for (k, v) in subson.items():
