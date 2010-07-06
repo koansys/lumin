@@ -28,13 +28,15 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-__version__ = '0.0.0'
+__version__ = '0.0.1a'
 
-requires = ['nose',
-            'coverage',
-            'colander',
-            'repoze.bfg'
-            ]
+requires = [
+    'colander',
+    'coverage',
+    'nose',
+    'pymongo',
+    'repoze.bfg'
+    ]
 
 class doc(Command):
     description = "generate or test documentation"

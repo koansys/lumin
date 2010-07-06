@@ -16,7 +16,6 @@ except ImportError:
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
 
-from repoze.bfg.security import authenticated_userid
 from repoze.bfg.settings import get_settings
 
 from lumin.son import ColanderNullTransformer
@@ -68,8 +67,8 @@ class RootFactory(object):
             self.db.add_son_manipulator(NamespaceInjector())
             self.db.add_son_manipulator(AutoReference(self.db))
         self.fs = GridFS(self.db)
-        self.logged_in = authenticated_userid(request)
         ## TODO: check and make sure that the mc host is a valid hoststring
         if settings.get('mc_host', None) and memcache:
             self.mc = memcache.Client(settings['mc_host'])
+
 
