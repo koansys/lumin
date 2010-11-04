@@ -48,6 +48,7 @@ def normalize(title):
 
 class RootFactory(object):
     __acl__ = [ (Allow, Everyone, 'view'),]
+    __name__ = __parent__ = None
     def __init__(self, request, collection=None):
         settings = get_settings()
         self.db = request.db
