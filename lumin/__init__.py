@@ -1,25 +1,15 @@
 import re
 import unicodedata
 
-import pymongo
 from pymongo.errors import DuplicateKeyError
-from pymongo.son_manipulator import AutoReference
-from pymongo.son_manipulator import NamespaceInjector
-from gridfs import GridFS 
+from gridfs import GridFS
 
-memcache = None
-try:
-    import memcache
-except ImportError:
-    pass
-
+from repoze.bfg.chameleon_zpt import get_template
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
-
 from repoze.bfg.settings import get_settings
 
-from lumin.son import ColanderNullTransformer
-
+from lumin.db import get_mongodb
 
 def insert_doc(collection, document, title_or_id, key='url_id', safe=True):
     """
@@ -60,15 +50,16 @@ class RootFactory(object):
     __acl__ = [ (Allow, Everyone, 'view'),]
     def __init__(self, request, collection=None):
         settings = get_settings()
-        self.db = pymongo.Connection.from_uri(
-            uri=settings['db_uri'])[settings['db_name']]
-        self.db.add_son_manipulator(ColanderNullTransformer())
-        if settings.get('autoreference', None):
-            self.db.add_son_manipulator(NamespaceInjector())
-            self.db.add_son_manipulator(AutoReference(self.db))
-        self.fs = GridFS(self.db)
-        ## TODO: check and make sure that the mc host is a valid hoststring
-        if settings.get('mc_host', None) and memcache:
-            self.mc = memcache.Client(settings['mc_host'])
+        self.db = request.db
+        self.fs = request.fs
+        if request.get('fs', None):
+            self.mc = request.mc
 
 
+class View:
+    def __init__(self, api=None, collection_name='users'):
+        if api:
+            self.api = get_template(api)
+        else:
+            self.api = api
+            self.collection_name = collection_name
