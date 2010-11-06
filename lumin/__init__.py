@@ -4,10 +4,10 @@ import unicodedata
 from pymongo.errors import DuplicateKeyError
 from gridfs import GridFS
 
-from repoze.bfg.chameleon_zpt import get_template
-from repoze.bfg.security import Allow
-from repoze.bfg.security import Everyone
-from repoze.bfg.settings import get_settings
+from pyramid.chameleon_zpt import get_template
+from pyramid.security import Allow
+from pyramid.security import Everyone
+from pyramid.settings import get_settings
 
 from lumin.db import get_mongodb
 

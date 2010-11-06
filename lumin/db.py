@@ -1,10 +1,10 @@
 from zope.interface import Interface
 from zope.component.interfaces import ComponentLookupError
 
-from repoze.bfg.events import subscriber
-from repoze.bfg.interfaces import INewRequest
-from repoze.bfg.threadlocal import get_current_registry
-from repoze.bfg.settings import get_settings
+from pyramid.events import subscriber
+from pyramid.interfaces import INewRequest
+from pyramid.threadlocal import get_current_registry
+from pyramid.settings import get_settings
 
 import pymongo
 from gridfs import GridFS

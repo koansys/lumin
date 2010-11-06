@@ -3,9 +3,9 @@ from colander import Float
 from colander import SchemaNode
 from colander import String
 
-from repoze.bfg.security import authenticated_userid
-from repoze.bfg.security import Allow
-from repoze.bfg.security import Everyone
+from pyramid.security import authenticated_userid
+from pyramid.security import Allow
+from pyramid.security import Everyone
 
 from lumin import RootFactory
 
