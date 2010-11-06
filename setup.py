@@ -35,7 +35,7 @@ requires = [
     'coverage',
     'nose',
     'pymongo',
-    'repoze.bfg'
+    'pyramid'
     ]
 
 class doc(Command):
