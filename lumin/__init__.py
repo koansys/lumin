@@ -9,7 +9,7 @@ from pyramid.security import Everyone
 from pyramid.settings import get_settings
 
 
-def insert_doc(collection, document, title_or_id, key='url_id', safe=True):
+def insert_doc(collection, document, title_or_id, key='__uid__', safe=True):
     """
     TODO: Insert a doc with a suffixed id if necessary as our unique id, and return
     TODO: prolly not ready for use yet. I just put a sanitized copy of this here.
