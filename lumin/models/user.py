@@ -16,6 +16,17 @@ from lumin import RootFactory
 from lumin.util import reset
 
 
+@colander.deferred
+def deferred_username_validator(node, kw):
+    request = kw['request']
+    def validate_username(node, value):
+        collection = request.context.collection
+        available = collection.find({'__uid__': value}).count()==0
+        if not available:
+            raise colander.Invalid(node, "Username is not available")
+    return validate_username
+
+
 email_widget = deform.widget.CheckedInputWidget(
     subject="Email",
     confirm_subject="Confirm Email",
@@ -41,7 +52,7 @@ class UserSchema(colander.MappingSchema):
     __uid__ = SchemaNode(String(),
                          title="Username",
                          description="The name of the participant",
-                         validator=User.deferred_username_check)
+                         validator=deferred_username_validator)
     given_name = SchemaNode(String(), missing='',
                             title="Given Name")
     surname = SchemaNode(String(), missing='',
@@ -87,7 +98,7 @@ class User(RootFactory):
             except AssertionError:
                 raise HTTPInternalServerError
 
-        self.schema = UserSchema()
+        self.schema = UserSchema().bind(request=self.request)
 
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
@@ -101,13 +112,3 @@ class User(RootFactory):
     def insert(self, doc):
         self.collection.ensure_index('__uid__', unique=True)
         self.collection.save(doc, safe=True)
-
-    @colander.deferred
-    def username_validator(cls, node, kw):
-        request = kw['request']
-        def validate_username(node, value):
-            available = request.db[cls.__collection__].find({'__uid__': value }
-                                                            ).count() == 0
-            if not available:
-                raise colander.Invalid("Username is not available")
-        return validate_username
