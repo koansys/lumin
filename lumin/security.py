@@ -8,7 +8,7 @@ from pyramid.chameleon_zpt import get_template
 from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
-from pyramic.settings import get_settings
+from pyramid.settings import get_settings
 from pyramid.url import route_url
 
 
@@ -72,8 +72,8 @@ class Login:
             message = message,
             password = password,
             section = 'login',
-            title = 'ravel | Log in',
-            url = request.application_url + '/login',
+            title = 'Please log in',
+            action = '/login',
             )
 login = Login()
 
