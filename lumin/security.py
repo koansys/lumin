@@ -1,5 +1,6 @@
 from datetime import datetime
-from hashlib import sha224
+from hashlib import sha256
+import hmac
 
 from webob.exc import HTTPFound
 
@@ -7,6 +8,7 @@ from pyramid.chameleon_zpt import get_template
 from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
+from pyramic.settings import get_settings
 from pyramid.url import route_url
 
 
@@ -26,10 +28,13 @@ groupfinder = GroupFinder()
 
 
 class Login:
-    def __init__(self, api, collection_name='users'):
-        self.api = get_template(api)
+    def __init__(self, api=None, collection_name='users'):
+        if api:
+            self.api = get_template(api)
+        else:
+            self.api = api
         self.collection_name = collection_name
-        
+
     def __call__(self, request):
         login_url = route_url('login', request)
         referrer = request.url
@@ -46,10 +51,12 @@ class Login:
             except StopIteration:
                 user = None
             if user:
-                if sha224(password).hexdigest() == user['password']:
+                settings = get_settings()
+                challenged = hmac.new(settings['secret'], password, sha256).hexdigest()
+                if challenged == user['password']:
                     headers = remember(request, login)
-                    
-                    request.root.db[self.collection_name].update(
+
+                    request.db[self.collection_name].update(
                         {"_id" : user['_id']}, 
                         {"$set" : {'last_login' : datetime.now()}}
                          )
@@ -74,10 +81,9 @@ login = Login()
 class Logout:
     def __init__(self, view_name='home'):
         self.view_name = view_name
-    
+
     def __call__(self, request):
         headers = forget(request)
         return HTTPFound(location=route_url(self.view_name, request),
                          headers = headers)
 logout = Logout()
-
