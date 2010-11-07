@@ -22,7 +22,7 @@ email_widget = deform.widget.CheckedInputWidget(
     size=40
     )
 
-class EmailSchema(colander.MappingSchema):
+class EmailSchema(colander.Schema):
     email = SchemaNode(String(),
                        title="email",
                        description='Type your email address and confirm it',
@@ -30,7 +30,7 @@ class EmailSchema(colander.MappingSchema):
                        widget=email_widget)
 
 
-class PasswordSchema(colander.MappingSchema):
+class PasswordSchema(colander.Schema):
     password = SchemaNode(String(),
                           validator=colander.Length(min=6),
                           widget = deform.widget.CheckedPasswordWidget(size=40),
@@ -38,24 +38,23 @@ class PasswordSchema(colander.MappingSchema):
 
 
 class UserSchema(colander.MappingSchema):
-    username = SchemaNode(String(),
-                          title="User",
-                          description="The name of the participant")
+    __uid__ = SchemaNode(String(),
+                         title="Username",
+                         description="The name of the participant",
+                         validator=User.deferred_username_check)
     given_name = SchemaNode(String(), missing='',
                             title="Given Name")
     surname = SchemaNode(String(), missing='',
                          title="Surname")
-    email = EmailSchema()
-    password = PasswordSchema()
-    # email = SchemaNode(String(),
-    #                    title="email",
-    #                    description='Type your email address and confirm it',
-    #                    validator=colander.Email(),
-    #                    widget=email_widget)
-    # password = SchemaNode(String(),
-    #                       validator=colander.Length(min=6),
-    #                       widget = deform.widget.CheckedPasswordWidget(size=40),
-    #                       description="Type your password and confirm it")
+    email = SchemaNode(String(),
+                       title="email",
+                       description='Type your email address and confirm it',
+                       validator=colander.Email(),
+                       widget=email_widget)
+    password = SchemaNode(String(),
+                          validator=colander.Length(min=6),
+                          widget = deform.widget.CheckedPasswordWidget(size=40),
+                          description="Type your password and confirm it")
 
 
 class User(RootFactory):
@@ -100,4 +99,15 @@ class User(RootFactory):
         return (form, resources)
 
     def insert(self, doc):
-        pass
+        self.collection.ensure_index('__uid__', unique=True)
+        self.collection.save(doc, safe=True)
+
+    @colander.deferred
+    def username_validator(cls, node, kw):
+        request = kw['request']
+        def validate_username(node, value):
+            available = request.db[cls.__collection__].find({'__uid__': value }
+                                                            ).count() == 0
+            if not available:
+                raise colander.Invalid("Username is not available")
+        return validate_username
