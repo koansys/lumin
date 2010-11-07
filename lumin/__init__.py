@@ -2,14 +2,12 @@ import re
 import unicodedata
 
 from pymongo.errors import DuplicateKeyError
-from gridfs import GridFS
 
 from pyramid.chameleon_zpt import get_template
 from pyramid.security import Allow
 from pyramid.security import Everyone
 from pyramid.settings import get_settings
 
-from lumin.db import get_mongodb
 
 def insert_doc(collection, document, title_or_id, key='url_id', safe=True):
     """
