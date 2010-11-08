@@ -103,6 +103,7 @@ class User(RootFactory):
         (Allow, Everyone, ('add')),
         (Allow, 'group:users', ('add', 'edit')),
         (Allow, 'group:managers', ('add', 'edit', 'delete')),
+        (Allow, 'owner', ('edit', 'delete')),
         ]
 
     __parent__ = __collection__ = 'users'
@@ -113,7 +114,7 @@ class User(RootFactory):
         self.environ = request.environ
         self.collection = self.db[self.__collection__]
         self.logged_in = authenticated_userid(request)
-        self.user_id = request.matchdict.get('url_id')
+        self.user_id = request.matchdict.get('participant_id')
         if self.user_id:
             cursor = self.collection.find(
                 {'__uid__' : self.user_id}
@@ -122,11 +123,12 @@ class User(RootFactory):
                 assert cursor.count() < 2
                 self.user = cursor.next()
             except StopIteration:
-                raise HTTPNotFound
+                raise NotFound
             except AssertionError:
                 raise HTTPInternalServerError
 
         self.schema = UserSchema().bind(request=self.request)
+
 
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
@@ -137,6 +139,24 @@ class User(RootFactory):
         resources = form.get_widget_resources()
         return (form, resources)
 
+    def edit_form(self):
+        buttons = (deform.form.Button(name = "submit",
+                                        title = "Update user"
+                                        ),
+                   reset)
+        form = deform.Form(self.schema, buttons=buttons)
+        resources = form.get_widget_resources()
+        return (form, resources)
+
     def insert(self, doc):
         self.collection.ensure_index('__uid__', unique=True)
-        self.collection.save(doc, safe=True)
+        oid = self.collection.save(doc, safe=True)
+        return oid
+
+    def update(self):
+        self.collection.ensure_index('__uid__', unique=True)
+        oid = self.collection.update({"_id" : self.user["_id"] },
+                                     self.user,
+                                     manipulate=True,
+                                     safe=True)
+        return oid
