@@ -103,7 +103,6 @@ class User(RootFactory):
         (Allow, Everyone, ('add')),
         (Allow, 'group:users', ('add', 'edit')),
         (Allow, 'group:managers', ('add', 'edit', 'delete')),
-        (Allow, 'owner', ('edit', 'delete')),
         ]
 
     __parent__ = __collection__ = 'users'
@@ -122,6 +121,7 @@ class User(RootFactory):
             try:
                 assert cursor.count() < 2
                 self.user = cursor.next()
+                self.__acl__.append((Allow, self.user['__uid__'], ('edit', 'delete')))
             except StopIteration:
                 raise NotFound
             except AssertionError:
