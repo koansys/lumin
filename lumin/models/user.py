@@ -57,16 +57,6 @@ class UserSchema(colander.MappingSchema):
                             title="Given Name")
     surname = SchemaNode(String(), missing='',
                          title="Surname")
-    email = SchemaNode(String(),
-                       title="email",
-                       description='Type your email address and confirm it',
-                       validator=colander.Email(),
-                       widget=email_widget)
-    password = SchemaNode(String(),
-                          validator=colander.Length(min=6),
-                          widget = deform.widget.CheckedPasswordWidget(size=40),
-                          description="Type your password and confirm it")
-
     street_address = SchemaNode(String(), missing='',
                                 title="Street Address",
                                 description='Address info (number, street, unit)')
@@ -95,6 +85,16 @@ class UserSchema(colander.MappingSchema):
                           title='Latitude')
     longitude = SchemaNode(Float(), missing=colander.null,
                            title='Longitude')
+    email = SchemaNode(String(),
+                       title="email",
+                       description='Type your email address and confirm it',
+                       validator=colander.Email(),
+                       widget=email_widget)
+    password = SchemaNode(String(),
+                          validator=colander.Length(min=6),
+                          widget = deform.widget.CheckedPasswordWidget(size=40),
+                          description="Type your password and confirm it")
+
 
 class User(RootFactory):
 
