@@ -4,7 +4,6 @@ import hmac
 
 from webob.exc import HTTPFound
 
-from pyramid.chameleon_zpt import get_template
 from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
@@ -18,21 +17,17 @@ class GroupFinder:
 
     def __call__(self, userid, request):
         try:
-            user = request.root.db[self.collection_name].find(
-                {'username' : userid}).next()
+            user = request.db[self.collection_name].find(
+                {'__uid__' : userid}).next()
         except StopIteration:
             user = None
-        if user:
+        if user and not user.get('disabled', None):
             return user['groups']
 groupfinder = GroupFinder()
 
 
 class Login:
-    def __init__(self, api=None, collection_name='users'):
-        if api:
-            self.api = get_template(api)
-        else:
-            self.api = api
+    def __init__(self, collection_name='users'):
         self.collection_name = collection_name
 
     def __call__(self, request):
@@ -46,11 +41,11 @@ class Login:
             login = request.params['login']
             password = request.params['password']
             try:
-                user = request.root.db[self.collection_name].find(
-                    {'username' : login}).next()
+                user = request.db[self.collection_name].find(
+                    {'__uid__' : login}).next()
             except StopIteration:
                 user = None
-            if user:
+            if user and not user.get('disabled', None):
                 settings = get_settings()
                 challenged = hmac.new(settings['secret'], password, sha256).hexdigest()
                 if challenged == user['password']:
@@ -65,7 +60,6 @@ class Login:
             message = 'Login failed'
 
         return dict(
-            api = self.api,
             came_from = came_from,
             logged_in = authenticated_userid(request),
             login = login,
