@@ -120,8 +120,6 @@ class User(RootFactory):
         if self.user_id != self.logged_in:
             if (Allow, self.logged_in, ('edit', 'delete')) in self.__acl__:
                 self.__acl__.remove((Allow, self.logged_in, ('edit', 'delete')))
-        print authenticated_userid(request)
-        print self.__acl__
         if self.user_id:
             cursor = self.collection.find(
                 {'__uid__' : self.user_id}
