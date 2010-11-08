@@ -114,6 +114,14 @@ class User(RootFactory):
         self.collection = self.db[self.__collection__]
         self.logged_in = authenticated_userid(request)
         self.user_id = request.matchdict.get('participant_id')
+        if self.user_id == self.logged_in:
+            if (Allow, self.user_id, ('edit', 'delete')) not in self.__acl__:
+                self.__acl__.append((Allow, self.user_id, ('edit', 'delete')))
+        if self.user_id != self.logged_in:
+            if (Allow, self.logged_in, ('edit', 'delete')) in self.__acl__:
+                self.__acl__.remove((Allow, self.logged_in, ('edit', 'delete')))
+        print authenticated_userid(request)
+        print self.__acl__
         if self.user_id:
             cursor = self.collection.find(
                 {'__uid__' : self.user_id}
@@ -121,7 +129,6 @@ class User(RootFactory):
             try:
                 assert cursor.count() < 2
                 self.user = cursor.next()
-                self.__acl__.append((Allow, self.user['__uid__'], ('edit', 'delete')))
             except StopIteration:
                 raise NotFound
             except AssertionError:
