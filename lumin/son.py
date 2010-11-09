@@ -22,7 +22,10 @@ class ColanderNullTransformer(SONManipulator):
     def transform_outgoing(self, son, collection):
         for (k, v) in son.items():
             if isinstance(v, dict):
-                self.recursive_out(v)
+                if v !=SENTINEL:
+                    self.recursive_out(v)
+                elif v == SENTINEL:
+                    son[k] = colander.null
         return son
 
     def recursive_in(self, subson):
