@@ -1,2 +1,5 @@
 lumin/#__init__.py#
 lumin/#login.py#
+*egg-info*
+*.pyc
+*.pt.py
