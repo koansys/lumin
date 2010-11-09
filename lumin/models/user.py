@@ -126,7 +126,7 @@ class User(RootFactory):
                 )
             try:
                 assert cursor.count() < 2
-                self.user = cursor.next()
+                self.data = cursor.next()
             except StopIteration:
                 raise NotFound
             except AssertionError:
@@ -159,9 +159,8 @@ class User(RootFactory):
         return oid
 
     def update(self):
-        self.collection.ensure_index('__uid__', unique=True)
-        oid = self.collection.update({"_id" : self.user["_id"] },
-                                     self.user,
+        oid = self.collection.update({"_id" : self.data["_id"] },
+                                     self.data,
                                      manipulate=True,
                                      safe=True)
         return oid
