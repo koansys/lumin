@@ -5,10 +5,8 @@ import colander
 SENTINEL = {u'_type': u'colander.null'}
 
 class ColanderNullTransformer(SONManipulator):
-    """Added to the db at load time in (at the time of this writing)
-    run:get_root
-    This allows MongoDB to store and retrieve colander.null sentinals for
-    unknown values.
+    """Added to the db at load time, this allows MongoDB to store and
+    retrieve colander.null sentinals for unknown values.
     """
     def transform_incoming(self, son, collection):
         for (k, v) in son.items():
@@ -18,7 +16,7 @@ class ColanderNullTransformer(SONManipulator):
             if isinstance(v, dict):
                 self.recursive_in(v)
         return son
-    
+
     def transform_outgoing(self, son, collection):
         for (k, v) in son.items():
             if isinstance(v, dict):
