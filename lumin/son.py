@@ -31,8 +31,10 @@ class ColanderNullTransformer(SONManipulator):
             if v is colander.null:
                 subson[k] = SENTINEL
                 continue
-            if isinstance(v, dict) and v != SENTINEL:
+            if isinstance(v, dict):
                 for (key, value) in v.items():
+                    if value is colander.null:
+                        v[key] = SENTINEL
                     if isinstance(value, dict):
                         self.recursive_in(value)
 
