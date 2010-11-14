@@ -95,6 +95,25 @@ class UserSchema(colander.MappingSchema):
                           widget = deform.widget.CheckedPasswordWidget(size=40),
                           description="Type your password and confirm it")
 
+class SimpleUserSchema(colander.MappingSchema):
+    __uid__ = SchemaNode(String(),
+                         title="Username",
+                         description="The name of the participant",
+                         validator=deferred_username_validator)
+    display_name = SchemaNode(String(), missing=colander.null,
+                              title="Display Name",
+                              widget=deform.widget.TextInputWidget(size=40))
+    email = SchemaNode(String(),
+                       title="email",
+                       description='Type your email address and confirm it',
+                       validator=colander.Email(),
+                       widget=email_widget)
+    password = SchemaNode(String(),
+                          validator=colander.Length(min=6),
+                          widget = deform.widget.CheckedPasswordWidget(size=40),
+                          description="Type your password and confirm it")
+
+
 
 class User(RootFactory):
 
@@ -133,8 +152,6 @@ class User(RootFactory):
                 raise NotFound
             except AssertionError:
                 raise HTTPInternalServerError
-
-
 
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
