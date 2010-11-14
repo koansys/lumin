@@ -106,12 +106,14 @@ class User(RootFactory):
         ]
 
     __parent__ = __collection__ = 'users'
+    __schema__ = UserSchema
 
     def __init__(self, request):
         super(User, self).__init__(request)
         self.request = request
         self.environ = request.environ
         self.collection = self.db[self.__collection__]
+        self.schema = self.__schema__().bind(request=self.request)
         self.logged_in = authenticated_userid(request)
         self.user_id = request.matchdict.get('participant_id')
         if self.user_id == self.logged_in:
@@ -132,7 +134,6 @@ class User(RootFactory):
             except AssertionError:
                 raise HTTPInternalServerError
 
-        self.schema = UserSchema().bind(request=self.request)
 
 
     def add_form(self):
