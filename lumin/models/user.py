@@ -15,7 +15,6 @@ from pyramid.security import Everyone
 from lumin import RootFactory
 from lumin.util import reset
 
-
 @colander.deferred
 def deferred_username_validator(node, kw):
     request = kw['request']
@@ -25,7 +24,6 @@ def deferred_username_validator(node, kw):
         if not available:
             raise colander.Invalid(node, "Username is not available")
     return validate_username
-
 
 email_widget = deform.widget.CheckedInputWidget(
     subject="Email",
