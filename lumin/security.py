@@ -42,7 +42,7 @@ class Login:
             password = request.params['password']
             try:
                 user = request.db[self.collection_name].find(
-                    {'__uid__' : login}).next()
+                    {'_id' : login}).next()
             except StopIteration:
                 user = None
             if user and not user.get('disabled', None):
