@@ -1,3 +1,4 @@
+import datetime 
 from webob.exc import HTTPInternalServerError
 
 import colander
@@ -14,6 +15,7 @@ from pyramid.security import Everyone
 
 from lumin import RootFactory
 from lumin.util import reset
+from lumin.util import TS_FORMAT
 
 @colander.deferred
 def deferred_username_validator(node, kw):
@@ -170,11 +172,14 @@ class User(RootFactory):
         return (form, resources)
 
     def insert(self, doc):
-        self.collection.ensure_index('__uid__', unique=True)
+        ctime = atime = datetime.datetime.utctime().strftime(TS_FORMAT)
+        doc['ctime'] = ctime
+        doc['atime'] = atime
         oid = self.collection.save(doc, safe=True)
         return oid
 
     def update(self):
+        self.data['atime'] = datetime.datetime.utctime().strftime(TS_FORMAT)
         oid = self.collection.update({"_id" : self.data["_id"] },
                                      self.data,
                                      manipulate=True,
