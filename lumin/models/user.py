@@ -22,7 +22,7 @@ def deferred_username_validator(node, kw):
     request = kw['request']
     def validate_username(node, value):
         collection = request.context.collection
-        available = collection.find({'__uid__': value}).count()==0
+        available = collection.find({'_id': value}).count()==0
         if not available:
             raise colander.Invalid(node, "Username is not available")
     return validate_username
@@ -49,10 +49,10 @@ class PasswordSchema(colander.Schema):
 
 
 class UserSchema(colander.MappingSchema):
-    __uid__ = SchemaNode(String(),
-                         title="Username",
-                         description="The name of the participant",
-                         validator=deferred_username_validator)
+    _id = SchemaNode(String(),
+                     title="Username",
+                     description="The name of the participant",
+                     validator=deferred_username_validator)
     given_name = SchemaNode(String(), missing='',
                             title="Given Name")
     surname = SchemaNode(String(), missing='',
@@ -96,7 +96,7 @@ class UserSchema(colander.MappingSchema):
                           description="Type your password and confirm it")
 
 class SimpleUserSchema(colander.MappingSchema):
-    __uid__ = SchemaNode(String(),
+    _id = SchemaNode(String(),
                          title="Username",
                          description="The name of the participant",
                          validator=deferred_username_validator)
@@ -143,7 +143,7 @@ class User(RootFactory):
                 self.__acl__.remove((Allow, self.logged_in, ('edit', 'delete')))
         if self.user_id:
             cursor = self.collection.find(
-                {'__uid__' : self.user_id}
+                {'_id' : self.user_id}
                 )
             try:
                 assert cursor.count() < 2
