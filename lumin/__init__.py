@@ -9,7 +9,7 @@ from pyramid.security import Everyone
 from pyramid.settings import get_settings
 
 
-def insert_doc(collection, document, title_or_id, key='__uid__', safe=True):
+def insert_doc(collection, document, title_or_id, key='_id', safe=True):
     """
     TODO: Insert a doc with a suffixed id if necessary as our unique id, and return
     TODO: prolly not ready for use yet. I just put a sanitized copy of this here.
@@ -43,11 +43,10 @@ def normalize(title):
     return re.sub('[-\s]+', '-', url_safe)
 
 
-
 class RootFactory(object):
     __acl__ = [ (Allow, Everyone, 'view'),]
     __name__ = __parent__ = None
-    __collection__ = 'root'
+    __collection__ = None
     def __init__(self, request, collection=None):
         settings = get_settings()
         self.db = request.db
