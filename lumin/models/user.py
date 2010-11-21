@@ -7,6 +7,7 @@ import deform
 
 from pyramid.security import authenticated_userid
 from pyramid.security import Allow
+from pyramid.security import Everyone
 
 from lumin.routes import Node
 
@@ -110,9 +111,15 @@ class SimpleUserSchema(colander.MappingSchema):
 
 
 class User(Node):
-
+    __acl__ = [
+        (Allow, Everyone, 'view'), ## Really?
+        (Allow, Everyone, ('add')),
+        (Allow, 'group:users', ('add', 'edit')),
+        (Allow, 'group:managers', ('add', 'edit', 'delete')),
+        ]
     __parent__ = __collection__ = 'users'
     __schema__ = UserSchema
+    button_name = 'Create User'
 
     def __init__(self, request):
         super(User, self).__init__(request)

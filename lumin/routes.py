@@ -15,17 +15,13 @@ from lumin.util import TS_FORMAT
 
 class Node(RootFactory):
 
-    __acl__ = [
-        (Allow, Everyone, 'view'), ## Really?
-        (Allow, Everyone, ('add')),
-        (Allow, 'group:users', ('add', 'edit')),
-        (Allow, 'group:managers', ('add', 'edit', 'delete')),
-        ]
+    __acl__ = []
 
     __collection__ = None #'root'
     __parent__ = None
     __schema__ = colander.Schema
-
+    button_name = "Submit"
+    
     def __init__(self, request):
         super(Node, self).__init__(request)
         self.request = request
@@ -51,7 +47,7 @@ class Node(RootFactory):
 
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
-                                        title = "Create user"
+                                        title = self.button_name
                                         ),
                    reset)
         form = deform.Form(self.schema, buttons=buttons)
