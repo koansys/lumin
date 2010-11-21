@@ -1,6 +1,3 @@
-import datetime 
-from webob.exc import HTTPInternalServerError
-
 import colander
 from colander import Float
 from colander import SchemaNode
@@ -8,14 +5,11 @@ from colander import String
 
 import deform
 
-from pyramid.exceptions import NotFound
 from pyramid.security import authenticated_userid
 from pyramid.security import Allow
-from pyramid.security import Everyone
 
-from lumin import RootFactory
-from lumin.util import reset
-from lumin.util import TS_FORMAT
+from lumin.routes import Node
+
 
 @colander.deferred
 def deferred_username_validator(node, kw):
@@ -115,73 +109,18 @@ class SimpleUserSchema(colander.MappingSchema):
 
 
 
-class User(RootFactory):
-
-    __acl__ = [
-        (Allow, Everyone, 'view'), ## Really?
-        (Allow, Everyone, ('add')),
-        (Allow, 'group:users', ('add', 'edit')),
-        (Allow, 'group:managers', ('add', 'edit', 'delete')),
-        ]
+class User(Node):
 
     __parent__ = __collection__ = 'users'
     __schema__ = UserSchema
 
     def __init__(self, request):
         super(User, self).__init__(request)
-        self.request = request
-        self.environ = request.environ
-        self.collection = self.db[self.__collection__]
-        self.schema = self.__schema__().bind(request=self.request)
         self.logged_in = authenticated_userid(request)
-        self.user_id = request.matchdict.get('participant_id')
-        if self.user_id == self.logged_in:
-            if (Allow, self.user_id, ('edit', 'delete')) not in self.__acl__:
-                self.__acl__.append((Allow, self.user_id, ('edit', 'delete')))
-        if self.user_id != self.logged_in:
+        self._id = request.matchdict.get('slug')
+        if self._id == self.logged_in:
+            if (Allow, self._id, ('edit', 'delete')) not in self.__acl__:
+                self.__acl__.append((Allow, self._id, ('edit', 'delete')))
+        if self._id != self.logged_in:
             if (Allow, self.logged_in, ('edit', 'delete')) in self.__acl__:
                 self.__acl__.remove((Allow, self.logged_in, ('edit', 'delete')))
-        if self.user_id:
-            cursor = self.collection.find(
-                {'_id' : self.user_id}
-                )
-            try:
-                assert cursor.count() < 2
-                self.data = cursor.next()
-            except StopIteration:
-                raise NotFound
-            except AssertionError:
-                raise HTTPInternalServerError
-
-    def add_form(self):
-        buttons = (deform.form.Button(name = "submit",
-                                        title = "Create user"
-                                        ),
-                   reset)
-        form = deform.Form(self.schema, buttons=buttons)
-        resources = form.get_widget_resources()
-        return (form, resources)
-
-    def edit_form(self):
-        buttons = (deform.form.Button(name = "submit",
-                                        title = "Update user"
-                                        ),
-                   reset)
-        form = deform.Form(self.schema, buttons=buttons)
-        resources = form.get_widget_resources()
-        return (form, resources)
-
-    def insert(self, doc):
-        ctime = atime = datetime.datetime.utctime().strftime(TS_FORMAT)
-        doc['ctime'] = ctime
-        doc['atime'] = atime
-        oid = self.collection.save(doc, safe=True)
-        return oid
-
-    def update(self):
-        self.data['atime'] = datetime.datetime.utctime().strftime(TS_FORMAT)
-        oid = self.collection.update({"_id" : self.data["_id"] },
-                                     self.data,
-                                     manipulate=True,
-                                     safe=True)
-        return oid
