@@ -28,16 +28,11 @@ class Node(RootFactory):
 
     def __init__(self, request):
         super(Node, self).__init__(request)
-        # self.db = request.db
-        # self.fs = request.fs
-        # if request.get('mc', None):
-        #     self.mc = request.mc
         self.request = request
         self.environ = request.environ
         self.collection = self.db[self.__collection__]
         self.schema = self.__schema__().bind(request=self.request)
         self._id = request.matchdict.get('slug')
-        import pdb; pdb.set_trace()
         if self._id:
             cursor = self.collection.find(
                 {'_id' : self._id}
@@ -80,7 +75,7 @@ class Node(RootFactory):
         return oid
 
     def update(self):
-        self.data['atime'] = datetime.datetime.utctime().strftime(TS_FORMAT)
+        self.data['atime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
         oid = self.collection.update({"_id" : self.data["_id"] },
                                      self.data,
                                      manipulate=True,
