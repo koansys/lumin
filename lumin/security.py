@@ -10,6 +10,7 @@ from pyramid.security import forget
 from pyramid.settings import get_settings
 from pyramid.url import route_url
 
+from lumin.util import TS_FORMAT
 
 class GroupFinder:
     def __init__(self, collection_name='users'):
@@ -53,7 +54,7 @@ class Login:
 
                     request.db[self.collection_name].update(
                         {"_id" : user['_id']}, 
-                        {"$set" : {'last_login' : datetime.now()}}
+                        {"$set" : {'last_login' : datetime.utcnow().strftime(TS_FORMAT)}}
                          )
                     return HTTPFound(location=came_from,
                                      headers=headers)
