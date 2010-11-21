@@ -18,7 +18,7 @@ class GroupFinder:
     def __call__(self, userid, request):
         try:
             user = request.db[self.collection_name].find(
-                {'__uid__' : userid}).next()
+                {'_id' : userid}).next()
         except StopIteration:
             user = None
         if user and not user.get('disabled', None):
