@@ -16,6 +16,14 @@ from lumin.routes import Node
 def deferred_username_validator(node, kw):
     request = kw['request']
     def validate_username(node, value):
+        if not value.replace('_', '').isalnum():
+            raise colander.Invalid(node,
+                                   "Only numbers, letters and underscores \
+                                   are permitted")
+        if not value[0].isalpha():
+            raise colander.Invalid(node,
+                                   "The username must start with a \
+                                   letter")
         collection = request.context.collection
         available = collection.find({'_id': value}).count()==0
         if not available:
