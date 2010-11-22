@@ -1,5 +1,7 @@
 import datetime
 
+from pymongo.errors import DuplicateKeyError
+
 import colander
 import deform
 
@@ -62,11 +64,24 @@ class Node(RootFactory):
         resources = form.get_widget_resources()
         return (form, resources)
 
-    def insert(self, doc):
+    def insert(self, doc, title_or_id, increment=True):
         ctime = atime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
         doc['atime'] = atime
-        oid = self.collection.save(normalize(doc), safe=True)
+        doc['_id'] = normalize(title_or_id)
+        if increment:
+            suffix=0
+            _id = doc['_id']
+            while True:
+                try:
+                    oid=self.collection.insert(doc, safe=True)
+                    break
+                except DuplicateKeyError as e:
+                    suffix+=1
+                    _id_suffixed = u','.join([_id, unicode(suffix)])
+                    doc['_id'] = _id_suffixed
+        else:
+            oid = self.collection.save(doc, safe=True)
         return oid
 
     def update(self):
