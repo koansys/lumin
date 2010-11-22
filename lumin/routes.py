@@ -6,8 +6,6 @@ import deform
 from webob.exc import HTTPInternalServerError
 
 from pyramid.exceptions import NotFound
-from pyramid.security import Allow
-from pyramid.security import Everyone
 
 from lumin import normalize
 from lumin import RootFactory
@@ -22,7 +20,7 @@ class Node(RootFactory):
     __parent__ = None
     __schema__ = colander.Schema
     button_name = "Submit"
-    
+
     def __init__(self, request):
         super(Node, self).__init__(request)
         self.request = request
