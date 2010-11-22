@@ -9,6 +9,7 @@ from pyramid.exceptions import NotFound
 from pyramid.security import Allow
 from pyramid.security import Everyone
 
+from lumin import normalize
 from lumin import RootFactory
 from lumin.util import reset
 from lumin.util import TS_FORMAT
@@ -67,7 +68,7 @@ class Node(RootFactory):
         ctime = atime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
         doc['atime'] = atime
-        oid = self.collection.save(doc, safe=True)
+        oid = self.collection.save(normalize(doc), safe=True)
         return oid
 
     def update(self):
