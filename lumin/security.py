@@ -66,7 +66,6 @@ class Login:
             login = login,
             message = message,
             password = password,
-            section = 'login',
             title = 'Please log in',
             action = '/login',
             )

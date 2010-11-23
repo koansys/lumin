@@ -8,7 +8,7 @@
     <tal:block metal:fill-slot="content">
       <div id="login-wrapper">
       <header>
-	<h1>Please Log In</h1>
+	<h2>Please Log In</h2>
       </header>
 	<div class="message" tal:content="message" />
 
