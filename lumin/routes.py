@@ -11,7 +11,6 @@ from pyramid.exceptions import NotFound
 
 from lumin import normalize
 from lumin import RootFactory
-from lumin.util import reset
 from lumin.util import TS_FORMAT
 
 class Node(RootFactory):
@@ -49,8 +48,7 @@ class Node(RootFactory):
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
                                         title = self.button_name
-                                        ),
-                   reset)
+                                        ),) ##keep tuple so buttons are iterable
         form = deform.Form(self.schema, buttons=buttons)
         resources = form.get_widget_resources()
         return (form, resources)
@@ -58,8 +56,7 @@ class Node(RootFactory):
     def edit_form(self):
         buttons = (deform.form.Button(name = "submit",
                                         title = "Update"
-                                        ),
-                   reset)
+                                        ),)##keep tuple so buttons are iterable
         form = deform.Form(self.schema, buttons=buttons)
         resources = form.get_widget_resources()
         return (form, resources)
