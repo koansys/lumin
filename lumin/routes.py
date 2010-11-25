@@ -55,8 +55,8 @@ class Node(RootFactory):
 
     def edit_form(self):
         buttons = (deform.form.Button(name = "submit",
-                                        title = "Update"
-                                        ),)##keep tuple so buttons are iterable
+                                      title = "Update"
+                                      ),)##keep tuple so buttons are iterable
         form = deform.Form(self.schema, buttons=buttons)
         resources = form.get_widget_resources()
         return (form, resources)
