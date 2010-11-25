@@ -18,7 +18,7 @@ class Node(RootFactory):
     __acl__ = []
 
     __collection__ = None #'root'
-    __parent__ = None
+    __name__ =  __parent__ = None
     __schema__ = colander.Schema
     button_name = "Submit"
 
