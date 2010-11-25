@@ -62,9 +62,9 @@ class Node(RootFactory):
         return (form, resources)
 
     def insert(self, doc, title_or_id, increment=True):
-        ctime = atime = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
-        doc['atime'] = atime
+        doc['mtime'] = mtime
         doc['_id'] = normalize(title_or_id)
         if increment:
             suffix=0
@@ -82,7 +82,7 @@ class Node(RootFactory):
         return oid
 
     def update(self):
-        self.data['atime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
         oid = self.collection.update({"_id" : self.data["_id"] },
                                      self.data,
                                      manipulate=True,
