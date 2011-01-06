@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from pymongo.son_manipulator import SONManipulator
 
 import colander
@@ -44,3 +46,22 @@ class ColanderNullTransformer(SONManipulator):
                 if v == SENTINEL:
                     subson[k] = colander.null
                 self.recursive_out(v)
+
+
+class DecimalTransform(SONManipulator):
+    def transform_incoming(self, son, collection):
+        for (k, v) in son.items():
+            if isinstance(v, Decimal):
+                son[k] = {'_type' : 'decimal', 'value' : unicode(v)}
+            elif isinstance(v, dict):
+                son[k] = self.transform_incoming(v, collection)
+        return son
+
+    def transform_outgoing(self, son, collection):
+        for (k, v) in son.items():
+            if isinstance(v, dict):
+                if "_type" in v and v["_type"] == "decimal":
+                   son[k] = Decimal(v['value'])
+                else:
+                   son[k] = self.transform_outgoing(v, collection)
+        return son
