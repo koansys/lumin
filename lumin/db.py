@@ -1,6 +1,10 @@
 from datetime import datetime
 from datetime import timedelta
 
+import colander
+import deform
+from deform.i18n import _
+
 from gridfs import GridFS
 import pymongo
 from pymongo.objectid import ObjectId
@@ -90,7 +94,7 @@ class MongoFileStore(object):
         return self.request.fs.exists(oid)
 
     def __setitem__(self, oid, cstruct):
-        fp = cstruct.get('fp')
+        fp = cstruct.pop('fp')
         content_type = cstruct.get('mimetype')
         filename = cstruct.get('filename')
         oid = self.request.fs.put(
@@ -115,7 +119,7 @@ class MongoUploadTmpStore(object):
                  max_age=86400):
         self.request = request
         self.fs = GridFS(request.db, collection=self.__collection__)
-        self.max_age = timedelta(seconds=self.max_age)
+        self.max_age = timedelta(seconds=max_age)
         ## XXX: Total hackery
         ## TODO: remove when mongo gets TTL capped collections.
         expired = self.request.db[self.__collection__].find(
@@ -140,7 +144,7 @@ class MongoUploadTmpStore(object):
         return self.fs.exists(oid)
 
     def __setitem__(self, oid, cstruct):
-        fp = cstruct.get('fp')
+        fp = cstruct.pop('fp')
         content_type = cstruct.get('mimetype')
         filename = cstruct.get('filename')
         oid = self.fs.put(
@@ -152,7 +156,51 @@ class MongoUploadTmpStore(object):
 
     def preview_url(self, oid):
         gf = self.get(oid)
-        if gf.get('content_type') in self.image_mimetypes:
+        if gf and gf.get('content_type') in self.image_mimetypes:
             return route_url('preview_image', self.request, oid=oid)
         else:
             return None #route_url('preview_image', self.request, uid=uid)
+
+
+class FileData(object):
+    def serialize(self, node, value):
+        if value is colander.null:
+            return colander.null
+        for n in ('filename', 'uid'):
+            if not n in value:
+                mapping = {'value':repr(value), 'key':n}
+                raise colander.Invalid(
+                    node,
+                    _('${value} has no ${key} key', mapping=mapping)
+                    )
+        result = deform.widget.filedict()
+        result['filename'] = value['filename']
+        result['uid'] = value['uid']
+        result['mimetype'] = value.get('mimetype')
+        result['size'] = value.get('size')
+        file_id = result.get('file_id')
+        if file_id is not None:
+            result['fp'] = node.fs.get(file_id)
+        else:
+            result['fp'] = None
+        result['preview_url'] = value.get('preview_url')
+        return result
+
+    def deserialize(self, node, value):
+        if value is colander.null:
+            return colander.null
+        #fp = value['fp']
+        #del value['fp'] # pickleability
+#        import StringIO
+#        fp = StringIO.StringIO("Hello world\n")
+#        fs = node.fs
+#        fp.seek(0)
+#        file_id = fs.put( # XXX this is broken
+#            fp,
+#            content_type=value['mimetype'],
+#            filename=value['filename'],
+#           metadata=value
+#            )
+#        value['file_id'] = file_id
+        return value
+
