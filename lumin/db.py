@@ -73,75 +73,43 @@ def register_memchached(config, mc_host):
     config.registerUtility(mc_conn, IMemcachedClient)
 
 
-class MongoFileStore(object):
-    def __init__(self, request):
-        self.request = request
-
-    def get(self, oid, default=None):
-        try:
-            result = self.request.get(ObjectId(oid))
-        except InvalidId as err:
-            return default
-        return result
-
-    def __getitem__(self, oid):
-        fh = self.get(oid)
-        if fh is None:
-            raise KeyError(oid)
-        return fh
-
-    def __contains__(self, oid):
-        return self.request.fs.exists(oid)
-
-    def __setitem__(self, oid, cstruct):
-        fp = cstruct.pop('fp')
-        content_type = cstruct.get('mimetype')
-        filename = cstruct.get('filename')
-        oid = self.request.fs.put(
-            fp,
-            content_type=content_type,
-            filename=filename,
-            metadata=cstruct
-            )
-
-    def preview_url(self, oid):
-        gf = self.get(oid)
-        if gf.get('content_type') in self.image_mimetypes:
-            return route_url('preview_image', self.request, oid=oid)
-        else:
-            return None #route_url('preview_image', self.request, uid=uid)
 
 class MongoUploadTmpStore(object):
     __collection__ = 'tempstore'
     def __init__(self,
                  request,
                  image_mimetypes=('image/jpeg', 'image/png', 'image/gif'),
-                 max_age=86400):
+                 max_age=3600):
         self.request = request
         self.fs = GridFS(request.db, collection=self.__collection__)
+        self.tempstore = request.db[self.__collection__]
         self.max_age = timedelta(seconds=max_age)
         ## XXX: Total hackery
         ## TODO: remove when mongo gets TTL capped collections.
-        expired = self.request.db[self.__collection__].find(
-            {'uploadDate' : {"$lt" : datetime.now() - self.max_age}})
+        expired = self.tempstore.files.find(
+            {'uploadDate' : {"$lt" : datetime.utcnow() - self.max_age}})
         for file_ in expired:
-            self.fs.delete(file_)
+            self.fs.delete(file_['_id'])
 
-    def get(self, oid, default=None):
-        try:
-            result = self.fs.get(ObjectId(oid))
-        except InvalidId as err:
+    def get(self, uid, default=None):
+        result = self.tempstore.files.find_one({'metadata.uid': uid })
+        if result is None:
             return default
+        oid = result['_id']
+        fp  = self.fs.get(oid)
+        if fp is None:
+            return default
+        result['fp'] = fp
         return result
 
-    def __getitem__(self, oid):
-        fh = self.get(oid)
-        if fh is None:
-            raise KeyError(oid)
-        return fh
+    def __getitem__(self, uid):
+        result = self.get(uid)
+        if result is None:
+            raise KeyError(uid)
+        return result
 
-    def __contains__(self, oid):
-        return self.fs.exists(oid)
+    def __contains__(self, uid):
+        return self.get(uid) is not None
 
     def __setitem__(self, oid, cstruct):
         fp = cstruct.pop('fp')
@@ -154,10 +122,12 @@ class MongoUploadTmpStore(object):
             metadata=cstruct
             )
 
-    def preview_url(self, oid):
-        gf = self.get(oid)
+
+    def preview_url(self, uid):
+        return None
+        gf = self.get(uid)
         if gf and gf.get('content_type') in self.image_mimetypes:
-            return route_url('preview_image', self.request, oid=oid)
+            return route_url('preview_image', self.request, uid=uid)
         else:
             return None #route_url('preview_image', self.request, uid=uid)
 
