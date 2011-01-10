@@ -22,13 +22,13 @@ class Node(RootFactory):
     __schema__ = colander.Schema
     button_name = "Submit"
 
-    def __init__(self, request):
+    def __init__(self, request, _id=None):
         super(Node, self).__init__(request)
         self.request = request
         self.environ = request.environ
         self.collection = self.db[self.__collection__]
         self.schema = self.__schema__().bind(request=self.request)
-        self._id = request.matchdict.get('slug')
+        self._id = _id if _id else request.matchdict.get('slug')
         if self._id:
             cursor = self.collection.find(
                 {'_id' : self._id}
