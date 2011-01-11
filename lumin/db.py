@@ -1,27 +1,17 @@
 from datetime import datetime
 from datetime import timedelta
 
-import colander
-import deform
-from deform.i18n import _
-
 from gridfs import GridFS
 import pymongo
-from pymongo.objectid import ObjectId
-from pymongo.errors import InvalidId
 
 from pyramid.url import route_url
 
 from zope.interface import Interface
-from zope.component.interfaces import ComponentLookupError
 
 from pyramid.events import subscriber
 from pyramid.interfaces import INewRequest
 from pyramid.threadlocal import get_current_registry
 from pyramid.settings import get_settings
-
-
-
 
 from lumin.son import ColanderNullTransformer
 
@@ -112,16 +102,20 @@ class MongoUploadTmpStore(object):
         return self.get(uid) is not None
 
     def __setitem__(self, oid, cstruct):
-        fp = cstruct.pop('fp')
+        fp = cstruct.get('fp')
         content_type = cstruct.get('mimetype')
         filename = cstruct.get('filename')
+        metadata = {'filename' : cstruct.get('filename'),
+                    'mimetype' : cstruct.get('mimetype'),
+                    'uid' : cstruct.get('uid'),
+            }
         oid = self.fs.put(
             fp,
             content_type=content_type,
             filename=filename,
-            metadata=cstruct
+            metadata=metadata
             )
-
+        fp.seek(0) ## reset so view can read
 
     def preview_url(self, uid):
         return None
@@ -130,47 +124,3 @@ class MongoUploadTmpStore(object):
             return route_url('preview_image', self.request, uid=uid)
         else:
             return None #route_url('preview_image', self.request, uid=uid)
-
-
-class FileData(object):
-    def serialize(self, node, value):
-        if value is colander.null:
-            return colander.null
-        for n in ('filename', 'uid'):
-            if not n in value:
-                mapping = {'value':repr(value), 'key':n}
-                raise colander.Invalid(
-                    node,
-                    _('${value} has no ${key} key', mapping=mapping)
-                    )
-        result = deform.widget.filedict()
-        result['filename'] = value['filename']
-        result['uid'] = value['uid']
-        result['mimetype'] = value.get('mimetype')
-        result['size'] = value.get('size')
-        file_id = result.get('file_id')
-        if file_id is not None:
-            result['fp'] = node.fs.get(file_id)
-        else:
-            result['fp'] = None
-        result['preview_url'] = value.get('preview_url')
-        return result
-
-    def deserialize(self, node, value):
-        if value is colander.null:
-            return colander.null
-        #fp = value['fp']
-        #del value['fp'] # pickleability
-#        import StringIO
-#        fp = StringIO.StringIO("Hello world\n")
-#        fs = node.fs
-#        fp.seek(0)
-#        file_id = fs.put( # XXX this is broken
-#            fp,
-#            content_type=value['mimetype'],
-#            filename=value['filename'],
-#           metadata=value
-#            )
-#        value['file_id'] = file_id
-        return value
-
