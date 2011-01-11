@@ -120,7 +120,7 @@ class MongoUploadTmpStore(object):
     def __delitem__(self, uid):
         result = self.tempstore.files.find_one({'metadata.uid': uid })
         oid = result['_id']
-        self.fd.delete(oid)
+        self.fs.delete(oid)
 
 
     def preview_url(self, uid):
