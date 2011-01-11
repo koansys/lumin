@@ -117,6 +117,12 @@ class MongoUploadTmpStore(object):
             )
         fp.seek(0) ## reset so view can read
 
+    def __delitem__(self, uid):
+        result = self.tempstore.files.find_one({'metadata.uid': uid })
+        oid = result['_id']
+        self.fd.delete(oid)
+
+
     def preview_url(self, uid):
         return None
         gf = self.get(uid)
