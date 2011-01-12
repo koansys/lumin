@@ -12,8 +12,10 @@ from pyramid.url import route_url
 
 from lumin.util import TS_FORMAT
 
+COLLECTION = 'users'
+
 class GroupFinder:
-    def __init__(self, collection_name='users'):
+    def __init__(self, collection_name=COLLECTION):
         self.collection_name = collection_name
 
     def __call__(self, userid, request):
@@ -28,7 +30,7 @@ groupfinder = GroupFinder()
 
 
 class Login:
-    def __init__(self, collection_name='users'):
+    def __init__(self, collection_name=COLLECTION):
         self.collection_name = collection_name
 
     def __call__(self, request):
