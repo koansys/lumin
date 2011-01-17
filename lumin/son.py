@@ -65,3 +65,57 @@ class DecimalTransform(SONManipulator):
                 else:
                    son[k] = self.transform_outgoing(v, collection)
         return son
+
+
+class DeNull:
+    def __call__(self, son):
+        return self.transform(son)
+
+    def transform(self, son):
+        for (k, v) in son.items():
+            if v is colander.null:
+                son[k] = ''
+                continue
+            if isinstance(v, dict):
+                self.recurse(v)
+        return son
+
+    def recurse(self, subson):
+        for (k, v) in subson.items():
+            if v is colander.null:
+                subson[k] = ''
+                continue
+            if isinstance(v, dict):
+                for (key, value) in v.items():
+                    if value is colander.null:
+                        v[key] = ''
+                    if isinstance(value, dict):
+                        self.recurse(value)
+denull = DeNull()
+
+
+class DeSentinel:
+    def __call__(self, son):
+        return self.transform(son)
+
+    def transform(self, son):
+        for (k, v) in son.items():
+            if v is SENTINEL:
+                son[k] = ''
+                continue
+            if isinstance(v, dict):
+                self.recurse(v)
+        return son
+
+    def recurse(self, subson):
+        for (k, v) in subson.items():
+            if v is SENTINEL:
+                subson[k] = ''
+                continue
+            if isinstance(v, dict):
+                for (key, value) in v.items():
+                    if value is SENTINEL:
+                        v[key] = ''
+                    if isinstance(value, dict):
+                        self.recurse(value)
+desentinel = DeSentinel()
