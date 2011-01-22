@@ -7,10 +7,22 @@ import colander
 SENTINEL = {u'_type': u'colander.null'}
 
 class ColanderNullTransformer(SONManipulator):
-    """Added to the db at load time, this allows MongoDB to store and
-    retrieve colander.null sentinals for unknown values.
+    """
+    Added to the db at load time, this allows MongoDB to store and
+    retrieve colander.null sentinals for unknown values. A
+    :term:`son_manipulator` is a object that edits :term:`SON` objects
+    as they enter or exit a MongoDB
+
+    .. code-block:: python
+
+       import pymongo
+       db = pymongo.Connection().testdb['acollection']
+       from lumin.son import ColanderNullTransformer
+       db.add_son_manipulator(ColanderNullTransformer())
     """
     def transform_incoming(self, son, collection):
+        """
+        """
         for (k, v) in son.items():
             if v is colander.null:
                 son[k] = SENTINEL
@@ -20,6 +32,8 @@ class ColanderNullTransformer(SONManipulator):
         return son
 
     def transform_outgoing(self, son, collection):
+        """
+        """
         for (k, v) in son.items():
             if isinstance(v, dict):
                 if v !=SENTINEL:
@@ -29,6 +43,8 @@ class ColanderNullTransformer(SONManipulator):
         return son
 
     def recursive_in(self, subson):
+        """
+        """
         for (k, v) in subson.items():
             if v is colander.null:
                 subson[k] = SENTINEL
@@ -41,6 +57,8 @@ class ColanderNullTransformer(SONManipulator):
                         self.recursive_in(value)
 
     def recursive_out(self, subson):
+        """
+        """
         for (k, v) in subson.items():
             if isinstance(v, dict):
                 if v == SENTINEL:
@@ -48,8 +66,12 @@ class ColanderNullTransformer(SONManipulator):
                 self.recursive_out(v)
 
 
-class DecimalTransform(SONManipulator):
+class DecimalTransformer(SONManipulator):
+    """
+    """
     def transform_incoming(self, son, collection):
+        """
+        """
         for (k, v) in son.items():
             if isinstance(v, Decimal):
                 son[k] = {'_type' : 'decimal', 'value' : unicode(v)}
@@ -58,6 +80,8 @@ class DecimalTransform(SONManipulator):
         return son
 
     def transform_outgoing(self, son, collection):
+        """
+        """
         for (k, v) in son.items():
             if isinstance(v, dict):
                 if "_type" in v and v["_type"] == "decimal":
@@ -68,10 +92,16 @@ class DecimalTransform(SONManipulator):
 
 
 class DeNull:
+    """
+    """
     def __call__(self, son):
+        """
+        """
         return self.transform(son)
 
     def transform(self, son):
+        """
+        """
         for (k, v) in son.items():
             if v is colander.null:
                 son[k] = ''
@@ -81,6 +111,8 @@ class DeNull:
         return son
 
     def recurse(self, subson):
+        """
+        """
         for (k, v) in subson.items():
             if v is colander.null:
                 subson[k] = ''
@@ -95,10 +127,16 @@ denull = DeNull()
 
 
 class DeSentinel:
+    """
+    """
     def __call__(self, son):
+        """
+        """
         return self.transform(son)
 
     def transform(self, son):
+        """
+        """
         for (k, v) in son.items():
             if v is SENTINEL:
                 son[k] = ''
@@ -108,6 +146,8 @@ class DeSentinel:
         return son
 
     def recurse(self, subson):
+        """
+        """
         for (k, v) in subson.items():
             if v is SENTINEL:
                 subson[k] = ''

@@ -12,7 +12,11 @@
 # All configuration values have a default value; values that are commented
 # out serve to show the default value.
 
-import sys, os
+import os
+import sys
+
+from docutils import nodes
+from docutils import utils
 
 # If your extensions are in another directory, add it here. If the
 # directory is relative to the documentation root, use os.path.abspath to
@@ -183,3 +187,15 @@ latex_logo = '.static/koansyslogo.png'
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+def app_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    """custom role for :app: marker, does nothing in particular except allow
+    :app:`Pyramid` to work (for later search and replace)."""
+    if 'class' in options:
+        assert 'classes' not in options
+        options['classes'] = options['class']
+        del options['class']
+    return [nodes.inline(rawtext, utils.unescape(text), **options)], []
+
+def setup(app):
+    app.add_role('app', app_role)

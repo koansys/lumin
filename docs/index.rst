@@ -1,24 +1,32 @@
 Documentation for lumin
 ==================================
 
-Put the overview of the purpose of the package here.
+:app:`lumin`, from Vo-*lumin*-ous a head nod to *mongo* in 
+:term:`MongoDB`.   :app:`lumin` is a library to facilitate using
+:term:`MongoDB` with :term:`Pyramid`, :term:`deform` and
+:term:`colander`.
 
 
 .. toctree::
    :maxdepth: 2
 
-   api.rst
+   usage
+   api/son
+   glossary
 
+Detailed Change History
+-----------------------
 
-Topic A
--------
+.. toctree::
+   :maxdepth: 1
 
-Explain topic.
+   changes
 
 
 Indices and tables
 ------------------
 
 * :ref:`genindex`
+* :ref:`glossary`
 * :ref:`modindex`
 * :ref:`search`
