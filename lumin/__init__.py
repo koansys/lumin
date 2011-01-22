@@ -6,7 +6,6 @@ from pymongo.errors import DuplicateKeyError
 from pyramid.chameleon_zpt import get_template
 from pyramid.security import Allow
 from pyramid.security import Everyone
-from pyramid.settings import get_settings
 
 
 def insert_doc(collection, document, title_or_id, key='_id', safe=True):
@@ -48,7 +47,6 @@ class RootFactory(object):
     __name__ = __parent__ = None
     __collection__ = None
     def __init__(self, request, collection=None):
-        settings = get_settings()
         self.db = request.db
         self.fs = request.fs
         if request.get('mc', None):
