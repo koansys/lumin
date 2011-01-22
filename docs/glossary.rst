@@ -26,3 +26,9 @@
      Pyramid is a *pay only for what you eat* web application
      framework. Read more at `The Pylons Project
      <http://docs.pylonsproject.org/projects/pyramid/dev/>`
+
+   SON
+     Serialized Object Notation. TODO: define better
+
+   son_manipulator
+     TODO: define this
