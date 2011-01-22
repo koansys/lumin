@@ -9,9 +9,10 @@ SENTINEL = {u'_type': u'colander.null'}
 class ColanderNullTransformer(SONManipulator):
     """
     Added to the db at load time, this allows MongoDB to store and
-    retrieve colander.null sentinals for unknown values. A
-    :term:`son_manipulator` is a object that edits :term:`SON` objects
-    as they enter or exit a MongoDB
+    retrieve sentinals for ``colander.null`` values. ``colander.null``
+    is a object which represents that a colander.Schema value is
+    missing or undefined. A :term:`son_manipulator` is a object that
+    edits :term:`SON` objects as they enter or exit a MongoDB
 
     .. code-block:: python
 
@@ -22,28 +23,33 @@ class ColanderNullTransformer(SONManipulator):
     """
     def transform_incoming(self, son, collection):
         """
+        recursively sets any value that is ``colander.null`` to a
+        serializable sentinel value.
         """
         for (k, v) in son.items():
             if v is colander.null:
                 son[k] = SENTINEL
                 continue
             if isinstance(v, dict):
-                self.recursive_in(v)
+                self._recursive_in(v)
         return son
 
     def transform_outgoing(self, son, collection):
         """
+        recursively sets any value that is a a
+        serialized sentinel value to ``colander.null``.
         """
         for (k, v) in son.items():
             if isinstance(v, dict):
                 if v !=SENTINEL:
-                    self.recursive_out(v)
+                    self._recursive_out(v)
                 elif v == SENTINEL:
                     son[k] = colander.null
         return son
 
-    def recursive_in(self, subson):
+    def _recursive_in(self, subson):
         """
+        called by transform_incoming to provide recursive transformation
         """
         for (k, v) in subson.items():
             if v is colander.null:
@@ -54,16 +60,17 @@ class ColanderNullTransformer(SONManipulator):
                     if value is colander.null:
                         v[key] = SENTINEL
                     if isinstance(value, dict):
-                        self.recursive_in(value)
+                        self._recursive_in(value)
 
-    def recursive_out(self, subson):
+    def _recursive_out(self, subson):
         """
+        called by transform_outgoing to provide recursive transformation
         """
         for (k, v) in subson.items():
             if isinstance(v, dict):
                 if v == SENTINEL:
                     subson[k] = colander.null
-                self.recursive_out(v)
+                self._recursive_out(v)
 
 
 class DecimalTransformer(SONManipulator):
