@@ -111,7 +111,7 @@ class MongoUploadTmpStore(object):
                     'mimetype' : cstruct.get('mimetype'),
                     'uid' : cstruct.get('uid'),
             }
-        oid = self.fs.put(
+        self.fs.put(
             fp,
             content_type=content_type,
             filename=filename,
