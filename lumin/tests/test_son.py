@@ -44,7 +44,6 @@ class TestConlanderNullTransformer(unittest.TestCase):
                'five' : colander.null}
         tf = self._makeOne()
         result = tf.transform_incoming(doc, None)
-        print result
         self.failUnlessEqual(result['one']['foo']['bar'], SENTINEL)
         self.failUnlessEqual(result['two']['foo'], SENTINEL)
         self.failUnlessEqual(result['three']['foo']['bar']['baz']['spam'], SENTINEL)
