@@ -13,6 +13,13 @@
      JSON, an HTML form post or any other equally simple data
      serialization.
 
+   colander.null
+     A `null value
+     <http://docs.repoze.org/colander/api.html#colander.null>` for
+     colander related operations.  See the `colander docs
+     <http://docs.repoze.org/colander/null.html>` for more
+     informration.
+
    deform
      `deform <http://docs.repoze.org/deform/>` is a Python HTML form
      generation library.

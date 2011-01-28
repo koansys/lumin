@@ -12,11 +12,7 @@
 .. autoclass:: DecimalTransformer(son, collection)
    :members:
 
-.. autoclass:: DeNull(son)
-   :members:
+.. autoattribute:: lumin.son.denull
 
-.. autoclass:: DeSentinel(son)
-   :members:
-
-
+.. autoattribute:: lumin.son.desentinel
 

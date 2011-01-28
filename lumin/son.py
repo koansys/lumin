@@ -8,7 +8,7 @@ SENTINEL = {u'_type': u'colander.null'}
 
 class ColanderNullTransformer(SONManipulator):
     """
-    Added to the db at load time, this allows MongoDB to store and
+    Added to the db after connection is created. This allows MongoDB to store and
     retrieve sentinals for ``colander.null`` values. ``colander.null``
     is a object which represents that a colander.Schema value is
     missing or undefined. A :term:`son_manipulator` is a object that
@@ -75,9 +75,22 @@ class ColanderNullTransformer(SONManipulator):
 
 class DecimalTransformer(SONManipulator):
     """
+    Added to the db after connection is created. This allows MongoDB
+    to store and retrieve Decimal values. A :term:`son_manipulator` is
+    a object that edits :term:`SON` objects as they enter or exit a
+    MongoDB
+
+    .. code-block:: python
+
+       import pymongo
+       db = pymongo.Connection().testdb['acollection']
+       from lumin.son import DecimalTransformer
+       db.add_son_manipulator(DecimalTransformer())
+
     """
     def transform_incoming(self, son, collection):
         """
+        sets any DecimalTransformer to a serializable value.
         """
         for (k, v) in son.items():
             if isinstance(v, Decimal):
@@ -88,6 +101,8 @@ class DecimalTransformer(SONManipulator):
 
     def transform_outgoing(self, son, collection):
         """
+        Sets any top level serialized Decimal to a Decimal. This is
+        not recursive.
         """
         for (k, v) in son.items():
             if isinstance(v, dict):
@@ -100,26 +115,30 @@ class DecimalTransformer(SONManipulator):
 
 class DeNull:
     """
+    ``DeNull`` is a callable that recursively replaces
+    :term:`colander.null` with an empty ``string`` ``u''``. It is
+    usefull for allowing items where :term:`colander.null` is not
+    supported.
+
+    .. code-block:: python
+
+       from lumin.son import denull
+       foo = desentinel({u"foo" : colander.null})
+       assert foo == {u"foo" : u''}
     """
     def __call__(self, son):
-        """
-        """
-        return self.transform(son)
+        return self._transform(son)
 
-    def transform(self, son):
-        """
-        """
+    def _transform(self, son):
         for (k, v) in son.items():
             if v is colander.null:
-                son[k] = ''
+                son[k] = u''
                 continue
             if isinstance(v, dict):
-                self.recurse(v)
+                self._recurse(v)
         return son
 
-    def recurse(self, subson):
-        """
-        """
+    def _recurse(self, subson):
         for (k, v) in subson.items():
             if v is colander.null:
                 subson[k] = ''
@@ -127,7 +146,7 @@ class DeNull:
             if isinstance(v, dict):
                 for (key, value) in v.items():
                     if value is colander.null:
-                        v[key] = ''
+                        v[key] = u''
                     if isinstance(value, dict):
                         self.recurse(value)
 denull = DeNull()
@@ -135,13 +154,22 @@ denull = DeNull()
 
 class DeSentinel:
     """
+    ``DeSentinel`` is similar to ``DeNull``. It is a callable that
+    recursively replaces ``lumin.son.SENTINAL`` with an empty
+    ``string`` ``u''``. It is usefull to allow using items where
+    ``lumin.son.SENTINAL`` is not supported or useful, such as a text
+    index.
+
+    .. code-block:: python
+
+       from lumin.son import desentinel
+       foo = desentinel({u"foo" : SENTINEL})
+       assert foo == {u"foo" : u''}
     """
     def __call__(self, son):
-        """
-        """
-        return self.transform(son)
+        return self._transform(son)
 
-    def transform(self, son):
+    def _transform(self, son):
         """
         """
         for (k, v) in son.items():
@@ -149,12 +177,10 @@ class DeSentinel:
                 son[k] = ''
                 continue
             if isinstance(v, dict):
-                self.recurse(v)
+                self._recurse(v)
         return son
 
-    def recurse(self, subson):
-        """
-        """
+    def _recurse(self, subson):
         for (k, v) in subson.items():
             if v is SENTINEL:
                 subson[k] = ''
@@ -166,3 +192,4 @@ class DeSentinel:
                     if isinstance(value, dict):
                         self.recurse(value)
 desentinel = DeSentinel()
+
