@@ -9,6 +9,8 @@ from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.settings import get_settings
 from pyramid.url import route_url
+from pyramid.view import view_config
+
 
 from lumin.util import TS_FORMAT
 
@@ -55,7 +57,7 @@ class Login:
                     headers = remember(request, login)
 
                     request.db[self.collection_name].update(
-                        {"_id" : user['_id']}, 
+                        {"_id" : user['_id']},
                         {"$set" : {'last_login' : datetime.utcnow().strftime(TS_FORMAT)}}
                          )
                     return HTTPFound(location=came_from,
@@ -71,7 +73,11 @@ class Login:
             title = 'Please log in',
             action = '/login',
             )
-login = Login()
+
+
+@view_config(route_name='login', renderer="lumin:templates/login.pt")
+def login(context, request):
+    return Login()(request)
 
 
 class Logout:
@@ -82,4 +88,13 @@ class Logout:
         headers = forget(request)
         return HTTPFound(location=route_url(self.view_name, request),
                          headers = headers)
-logout = Logout()
+
+
+@view_config(route_name='logout')
+def logout(context, request):
+    return Logout(request)
+
+
+def add_loginout(config):
+    config.add_route('login', '/login')
+    config.add_route('logout', '/logout')
