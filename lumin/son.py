@@ -148,7 +148,7 @@ class DeNull:
                     if value is colander.null:
                         v[key] = u''
                     if isinstance(value, dict):
-                        self.recurse(value)
+                        self._recurse(value)
 denull = DeNull()
 
 
@@ -190,6 +190,6 @@ class DeSentinel:
                     if value is SENTINEL:
                         v[key] = ''
                     if isinstance(value, dict):
-                        self.recurse(value)
+                        self._recurse(value)
 desentinel = DeSentinel()
 
