@@ -9,7 +9,7 @@ from pyramid.security import authenticated_userid
 from pyramid.security import Allow
 from pyramid.security import Everyone
 
-from lumin.node import NodeById
+from lumin.node import ContextById
 
 
 @colander.deferred
@@ -118,7 +118,7 @@ class SimpleUserSchema(colander.MappingSchema):
 
 
 
-class User(NodeById):
+class User(ContextById):
     __acl__ = [
         (Allow, Everyone, 'view'), ## Really?
         (Allow, Everyone, ('add')),
