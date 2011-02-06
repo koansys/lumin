@@ -8,11 +8,23 @@ import deform
 from webob.exc import HTTPInternalServerError
 
 from pyramid.exceptions import NotFound
+from pyramid.security import Allow
+from pyramid.security import Everyone
 
-from lumin import normalize
-from lumin import RootFactory
-from lumin.util import cancel
 from lumin.util import TS_FORMAT
+from lumin.util import cancel
+from lumin.util import normalize
+
+
+class RootFactory(object):
+    __acl__ = [ (Allow, Everyone, 'view'),]
+    __name__ = __parent__ = None
+    __collection__ = None
+    def __init__(self, request, collection=None):
+        self.db = request.db
+        self.fs = request.fs
+        if request.get('mc', None):
+            self.mc = request.mc
 
 
 class NodeById(RootFactory):
@@ -111,4 +123,3 @@ class NodeById(RootFactory):
                                         safe=safe)
         if safe and result['err']:
             raise result['err']
-
