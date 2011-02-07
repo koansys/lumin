@@ -14,6 +14,9 @@ def autocomplete_id(request):
         return HTTPNotFound
 
 def autocomplete_name(request):
+    """
+    Auto completes by name
+    """
     collection = request.matchdict.get('collection')
     if collection in request.db.collection_names():
         term = request.params.get('term')

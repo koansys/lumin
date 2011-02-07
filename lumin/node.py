@@ -61,7 +61,7 @@ class ContextById(RootFactory):
 
     def add_form(self):
         buttons = (deform.form.Button(name = "submit",
-                                        title = self.button_name
+                                      title = self.button_name
                                         ),
                    cancel)
         form = deform.Form(self.schema, buttons=buttons)
