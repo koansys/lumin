@@ -27,7 +27,7 @@ class RootFactory(object):
             self.mc = request.mc
 
 
-class NodeById(RootFactory):
+class ContextById(RootFactory):
 
     __acl__ = []
 
@@ -37,7 +37,7 @@ class NodeById(RootFactory):
     button_name = "Submit"
 
     def __init__(self, request, _id=None):
-        super(NodeById, self).__init__(request)
+        super(ContextById, self).__init__(request)
         self.request = request
         self.environ = request.environ
         self.collection = self.db[self.__collection__]
