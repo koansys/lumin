@@ -75,6 +75,8 @@ class Login:
             )
 
 
+@view_config(context='pyramid.exceptions.Forbidden',
+             renderer="lumin:templates/login.pt")
 @view_config(route_name='login', renderer="lumin:templates/login.pt")
 def login(context, request):
     return Login()(request)
