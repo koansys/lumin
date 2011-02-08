@@ -31,6 +31,7 @@ class ContextById(RootFactory):
 
     __acl__ = []
 
+    #: the collection name we will use in the DB
     __collection__ = None #'root'
     __name__ =  __parent__ = None
     __schema__ = colander.Schema
@@ -40,8 +41,16 @@ class ContextById(RootFactory):
         super(ContextById, self).__init__(request)
         self.request = request
         self.environ = request.environ
-        self.collection = self.db[self.__collection__]
-        self.schema = self.__schema__().bind(request=self.request)
+        ## These next two cant prolly use the setters below, maybe...
+        ## but this way you can set it as a class variable and then
+        ## override it live with another coll/schema and then get the
+        ## original back by self.property = self.__property__
+        ## This is perhaps desirable for our two schemas one form
+        ## dilemma. Use a non-validating (all colander.null) schema
+        ## while filling shit out then self.schema = ValidatingSchema
+        ## when finalizing and submitting.
+        self._collection = self.db[self.__collection__]
+        self._schema = self.__schema__().bind(request=self.request)
         self._id = _id if _id else request.matchdict.get('slug')
         if self._id:
             cursor = self.collection.find(
@@ -59,7 +68,56 @@ class ContextById(RootFactory):
     def __name__(self):
         return self._id
 
+    @property
+    def collection(self):
+        """
+        returns the :term:`context` factory's :term:`collection` name
+        """
+        return self._collection
+
+    @collection.setter
+    def collection(self, coll):
+        """
+        sets the context factory's collection
+
+        :param coll: The :term:`collection` name as ``unicode``, ``str``
+        """
+        if not isinstance(coll, (unicode, str)):
+            raise TypeError("{} is not unicode, str")
+        self._collection = self.db[coll]
+
+    @property
+    def schema(self):
+        """
+        returns the context factory's schema
+        """
+        return self._schema
+
+    @schema.setter
+    def schema(self, schema, bind=True):
+        """
+        sets the context factory's schema
+
+        :param schema: an instance of ``colander.MappingSchema``
+        :param bind: whether the request should be bound to the
+        schema, defaults to True. This is necessary for
+        colander.deferred to work with the db which is attached to the
+        request.
+        """
+        if not isinstance(schema, colander.MappingSchema):
+            raise TypeError("{} is not a colander.MappingSchema")
+        if bind:
+            self._schema = schema().bind(request=self.request)
+        else:
+            self._schema = schema()
+
+
+
     def add_form(self):
+        """
+        :rtype: a tuple consisting of the form and and required static
+        resources. For adding a :term:`context`
+        """
         buttons = (deform.form.Button(name = "submit",
                                       title = self.button_name
                                         ),
