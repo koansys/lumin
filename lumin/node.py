@@ -104,7 +104,7 @@ class ContextById(RootFactory):
         colander.deferred to work with the db which is attached to the
         request.
         """
-        if not isinstance(schema, colander.MappingSchema):
+        if not issubclass(schema, colander.Schema):
             raise TypeError("{} is not a colander.MappingSchema")
         if bind:
             self._schema = schema().bind(request=self.request)
