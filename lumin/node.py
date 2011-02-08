@@ -127,6 +127,12 @@ class ContextById(RootFactory):
         return (form, resources)
 
     def edit_form(self):
+        """
+        :rtype: a tuple consisting of the form and and required static
+        resources. For editing an existing :term:`context`
+
+        TODO: can these to forms be the same form?
+        """
         buttons = (deform.form.Button(name = "submit",
                                       title = "Update"
                                       ),
