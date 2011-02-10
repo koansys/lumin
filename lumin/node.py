@@ -163,7 +163,7 @@ class ContextById(RootFactory):
                     _id_suffixed = u','.join([_id, unicode(suffix)])
                     doc['_id'] = _id_suffixed
         else:
-            oid = self.collection.save(doc, safe=True)
+            oid = self.collection.insert(doc, safe=True)
         return oid
 
     def update(self):
