@@ -94,7 +94,8 @@ class Logout:
 
 @view_config(route_name='logout')
 def logout(context, request):
-    return Logout(request)
+    request.session.flash('You have been logged out.')
+    return Logout()(request)
 
 
 def add_loginout(config):
