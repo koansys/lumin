@@ -42,7 +42,7 @@ class ContextById(RootFactory):
         self.request = request
         self.environ = request.environ
         self.data={}
-        ## These next two cant prolly use the setters below, maybe...
+        ## These next two can prolly use the setters below, maybe...
         ## but this way you can set it as a class variable and then
         ## override it live with another coll/schema and then get the
         ## original back by self.property = self.__property__
