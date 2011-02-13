@@ -1,7 +1,7 @@
 Documentation for lumin
 ==================================
 
-:app:`lumin`, from Vo-*lumin*-ous a head nod to *mongo* in 
+:app:`lumin`, from Vo-*lumin*-ous a head nod to *mongo* in
 :term:`MongoDB`.   :app:`lumin` is a library to facilitate using
 :term:`MongoDB` with :term:`Pyramid`, :term:`deform` and
 :term:`colander`.
@@ -12,6 +12,7 @@ Documentation for lumin
 
    usage
    api/son
+   api/node
    glossary
 
 Detailed Change History

@@ -116,8 +116,12 @@ class ContextById(RootFactory):
 
     def add_form(self):
         """
-        :rtype: a tuple consisting of the form and and required static
-        resources. For adding a :term:`context`
+        :rtype: a tuple consisting of the form and and required static resources
+
+        This form is for adding a new that does not yet have a
+        :term:`context`. This isn't entirely true. We have generated a
+        context here, but is isn't in the DB yet and it has no data
+        yet. It is essentially a context shell at this point.
         """
         buttons = (deform.form.Button(name = "submit",
                                       title = self.button_name
@@ -129,10 +133,11 @@ class ContextById(RootFactory):
 
     def edit_form(self):
         """
-        :rtype: a tuple consisting of the form and and required static
-        resources. For editing an existing :term:`context`
+        :rtype: a tuple consisting of the form and and required static resources.
 
-        TODO: can these to forms be the same form?
+        This form is for editing an existing item represented by this :term:`context`
+
+        TODO: can these two forms be the same form?
         """
         buttons = (deform.form.Button(name = "submit",
                                       title = "Update"
@@ -143,10 +148,19 @@ class ContextById(RootFactory):
         return (form, resources)
 
 
-    def insert(self, doc, title_or_id, increment=True):
+    def insert(self,
+               doc,
+               title_or_id,
+               increment=True,
+               seperator=u'-'):
         """
-        Insert the item this context represents into the
+        Insert the item this ``context`` represents into the
         :term:`collection`.
+
+        :param doc: A dictionary to be stored in the DB
+        :param title_or_id: a string to be normalized for a URL and used as the _id for the document.
+        :param increment: Whether to increment ``title_or_id`` if it already exists in the DB. **Default: ``True``**
+        :param seperator: carachter to separate ``title_or_id`` incremental id. **Default: ``u"-"``**
         """
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
@@ -169,7 +183,7 @@ class ContextById(RootFactory):
 
     def update(self):
         """
-        update the item this ``context`` represents in the
+        Update the item this ``context`` represents in its
         :term:`collection`
         """
         self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
@@ -181,7 +195,7 @@ class ContextById(RootFactory):
 
     def delete(self, safe=False):
         """
-        Remove the entry represented by this context from this
+        Remove the entry represented by this ``context`` from this
         :term:`collection`
         """
         result = self.collection.remove(self.data["_id"],

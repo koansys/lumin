@@ -20,6 +20,13 @@
      <http://docs.repoze.org/colander/null.html>` for more
      informration.
 
+   collection
+     A collection is the moral equivalent of an SQL table.
+
+   context
+      The thing which is traversal finds or id created by a defined factory
+      when using routes.
+
    deform
      `deform <http://docs.repoze.org/deform/>` is a Python HTML form
      generation library.
