@@ -247,7 +247,8 @@ class ContextBySpec(RootFactory):
                 except StopIteration:
                     raise NotFound
                 except AssertionError:
-                    raise HTTPInternalServerError
+                    raise HTTPInternalServerError("More than one result "
+                                                  + "matched the spec") 
 
     @property
     def __name__(self):
