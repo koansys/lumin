@@ -335,35 +335,18 @@ class ContextBySpec(RootFactory):
 
     def insert(self,
                doc,
-               title_or_id,
-               increment=True,
-               seperator=u'-'):
+               ):
         """
         Insert the item this ``context`` represents into the
-        :term:`collection`.
+        :term:`collection`.  It generates the _id since we don't want
+        to ask for docs by this attribute.  The OID is returned.
 
         :param doc: A dictionary to be stored in the DB
-        :param title_or_id: a string to be normalized for a URL and used as the _id for the document.
-        :param increment: Whether to increment ``title_or_id`` if it already exists in the DB. **Default: ``True``**
-        :param seperator: carachter to separate ``title_or_id`` incremental id. **Default: ``u"-"``**
         """
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
         doc['mtime'] = mtime
-        doc['_id'] = normalize(title_or_id)
-        if increment:
-            suffix=0
-            _id = doc['_id']
-            while True:
-                try:
-                    oid=self.collection.insert(doc, safe=True)
-                    break
-                except DuplicateKeyError as e:
-                    suffix+=1
-                    _id_suffixed = u','.join([_id, unicode(suffix)])
-                    doc['_id'] = _id_suffixed
-        else:
-            oid = self.collection.insert(doc, safe=True)
+        oid = self.collection.insert(doc, safe=True)
         return oid
 
     def update(self):
