@@ -248,7 +248,7 @@ class ContextBySpec(RootFactory):
                     raise NotFound
                 except AssertionError:
                     raise HTTPInternalServerError("More than one result "
-                                                  + "matched the spec") 
+                                                  + "matched the spec")
 
     @property
     def __name__(self):
@@ -333,9 +333,7 @@ class ContextBySpec(RootFactory):
         return (form, resources)
 
 
-    def insert(self,
-               doc,
-               ):
+    def insert(self, doc):
         """
         Insert the item this ``context`` represents into the
         :term:`collection`.  It generates the _id since we don't want
