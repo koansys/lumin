@@ -16,6 +16,10 @@ from lumin.node import ContextById
 def deferred_username_validator(node, kw):
     request = kw['request']
     def validate_username(node, value):
+        if len(value) < 4 or len(value) > 24:
+            raise colander.Invalid(node,
+                                   "Length of user name must be between 4 and \
+                                    24 lowercase alphanumeric characters")
         if not value.replace('_', '').isalnum() or not value.islower():
             raise colander.Invalid(node,
                                    "Only lowercase numbers, letters and \
