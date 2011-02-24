@@ -29,7 +29,7 @@ class RootFactory(object):
 
 class ContextById(RootFactory):
 
-    __acl__ = []
+    __acl__ = [] ## this should become _default__acl__
 
     #: the collection name we will use in the DB
     __collection__ = None #'root'
@@ -187,11 +187,11 @@ class ContextById(RootFactory):
         :term:`collection`
         """
         self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
-        oid = self.collection.update({"_id" : self.data["_id"] },
-                                     self.data,
-                                     manipulate=True,
-                                     safe=True)
-        return oid
+        result = self.collection.update({"_id" : self.data["_id"] },
+                                        self.data,
+                                        manipulate=True,
+                                        safe=True)
+        return result
 
     def delete(self, safe=False):
         """
@@ -211,7 +211,7 @@ class ContextBySpec(RootFactory):
     :param spec: A dictionary to use to extract the desired item from the DB
     :param unique: Should this context be a single item
     """
-    _default__acl__ = []
+    _default__acl__ = __acl__ = []
 
     #: the collection name we will use in the DB
     __collection__ = None
@@ -226,17 +226,8 @@ class ContextBySpec(RootFactory):
         self.spec = spec
         self.unique = unique
         self.data={}
-        ## These next two can prolly use the setters below, maybe...
-        ## but this way you can set it as a class variable and then
-        ## override it live with another coll/schema and then get the
-        ## original back by self.property = self.__property__
-        ## This is perhaps desirable for our two schemas one form
-        ## dilemma. Use a non-validating (all colander.null) schema
-        ## while filling shit out then self.schema = ValidatingSchema
-        ## when finalizing and submitting.
         self._collection = self.db[self.__collection__]
         self._schema = self.__schema__().bind(request=self.request)
-        #self._id = _id if _id else request.matchdict.get('slug')
         if self.spec:
             cursor = self.collection.find(spec)
             if self.unique:
@@ -249,9 +240,14 @@ class ContextBySpec(RootFactory):
                 except AssertionError:
                     raise HTTPInternalServerError("More than one result "
                                                   + "matched the spec")
+        acl = self.data.get('__acl__', None)
+        if acl:
+            self.__acl__ = acl
+        self.__acl__.extend(self._default__acl__)l
 
     @property
     def __name__(self):
+        ## this is probably wrong, but maybe not need to think.
         return self._id
 
     @property
