@@ -243,7 +243,7 @@ class ContextBySpec(RootFactory):
         acl = self.data.get('__acl__', None)
         if acl:
             self.__acl__ = acl
-        self.__acl__.extend(self._default__acl__)l
+        self.__acl__.extend(self._default__acl__)
 
     @property
     def __name__(self):
