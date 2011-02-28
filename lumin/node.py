@@ -228,6 +228,7 @@ class ContextBySpec(RootFactory):
         self.data={}
         self._collection = self.db[self.__collection__]
         self._schema = self.__schema__().bind(request=self.request)
+        self.__acl__.extend(self._default__acl__)
         if self.spec:
             cursor = self.collection.find(spec)
             if self.unique:
@@ -242,8 +243,7 @@ class ContextBySpec(RootFactory):
                                                   + "matched the spec")
         acl = self.data.get('__acl__', None)
         if acl:
-            self.__acl__ = acl
-        self.__acl__.extend(self._default__acl__)
+            self.__acl__.extend(acl)
 
     @property
     def __name__(self):
