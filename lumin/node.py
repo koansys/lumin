@@ -228,7 +228,9 @@ class ContextBySpec(RootFactory):
         self.data={}
         self._collection = self.db[self.__collection__]
         self._schema = self.__schema__().bind(request=self.request)
-        self.__acl__.extend(self._default__acl__)
+        for item in self._default__acl__:
+            if item not in self.__acl__:
+                self.__acl__.append(item)
         if self.spec:
             cursor = self.collection.find(spec)
             if self.unique:
