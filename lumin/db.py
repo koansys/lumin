@@ -58,7 +58,11 @@ def add_memcached(event):
     if mc:
         event.request.mc = mc
 
-def register_memchached(config, mc_host):
+def register_memcached(config, mc_host):
+    if memcache is None:
+        # Raise import error exception
+        import memcached
+
     mc_conn = memcache.Client(mc_host)
     config.registerUtility(mc_conn, IMemcachedClient)
 
