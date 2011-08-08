@@ -37,6 +37,7 @@ requires = [
     'nose',
     'pymongo',
     'pyramid'
+    'python-memcached',
     ]
 
 class doc(Command):
