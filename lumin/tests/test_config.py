@@ -31,6 +31,6 @@ class ConfigurationTest(unittest.TestCase):
         self.assertTrue(client is None)
 
         # Now, let's register a memcached client
-        self.config.register_memcached('http://localhost/')
+        self.config.register_memcached('127.0.0.1:11211')
         client = self.config.registry.queryUtility(IMemcachedClient)
         self.assertTrue(client is not None)

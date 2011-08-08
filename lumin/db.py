@@ -63,8 +63,8 @@ def register_memcached(config, mc_host):
         # Raise import error exception
         import memcached
 
-    mc_conn = memcache.Client(mc_host)
-    config.registerUtility(mc_conn, IMemcachedClient)
+    mc_conn = memcache.Client([mc_host])
+    config.registry.registerUtility(mc_conn, IMemcachedClient)
 
 
 
