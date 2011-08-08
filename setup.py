@@ -36,7 +36,7 @@ requires = [
     'deform',
     'nose',
     'pymongo',
-    'pyramid'
+    'pyramid',
     'python-memcached',
     ]
 
