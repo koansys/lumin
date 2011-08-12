@@ -25,17 +25,15 @@ except ImportError:
 class IMongoDBConnection(Interface):
     pass
 
-def get_mongodb():
-    settings = get_settings()
-    db_name = settings['db_name']
-    reg = get_current_registry()
-    db = reg.getUtility(IMongoDBConnection)[db_name]
+def get_mongodb(registry):
+    db_name = registry.settings['db_name']
+    db = registry.getUtility(IMongoDBConnection)[db_name]
     db.add_son_manipulator(ColanderNullTransformer())
     return db
 
 @subscriber(INewRequest)
 def add_mongodb(event):
-    db = get_mongodb()
+    db = get_mongodb(event.request.registry)
     event.request.db = db
     event.request.fs = GridFS(db)
 
