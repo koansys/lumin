@@ -1,4 +1,5 @@
 import datetime
+import time
 
 from pymongo.errors import DuplicateKeyError
 from webob.exc import HTTPInternalServerError
@@ -6,6 +7,7 @@ from webob.exc import HTTPInternalServerError
 from pyramid.exceptions import NotFound
 from pyramid.security import Allow
 from pyramid.security import Everyone
+from pyramid.security import authenticated_userid
 
 from lumin.util import TS_FORMAT
 from lumin.util import normalize
@@ -30,13 +32,16 @@ class Collection(Factory):
     # Database collection name
     collection = None
 
-    def __init__(self, request):
+    def __init__(self, request, name=None):
         super(Collection, self).__init__(request)
-        self._collection = request.db[self.collection]
+
+        name = self._id = name if name is not None else self.collection
+        self._collection = request.db[name]
+        self._collection_history = request.db['%s.history' % name]
 
     @property
     def __name__(self):
-        return self.collection
+        return self._id
 
     def find(self, **kwargs):
         return self._collection.find(**kwargs)
@@ -65,31 +70,33 @@ class Collection(Factory):
                     break
                 except DuplicateKeyError:
                     suffix += 1
-                    _id_suffixed = u','.join([_id, unicode(suffix)])
+                    _id_suffixed = seperator.join([_id, unicode(suffix)])
                     doc['_id'] = _id_suffixed
         else:
             oid = self._collection.insert(doc, safe=True)
 
         return oid
 
-    def delete(self, safe=False):
+    def delete(self, _id, safe=False):
         """
-        Remove the entry represented by this ``context`` from this
+        Delete the entry represented by this ``_id`` from this
         :term:`collection`
         """
-        result = self._collection.remove(self.data["_id"], safe=safe)
+        result = self._collection.remove(_id, safe=safe)
         if safe and result['err']:
             raise result['err']
 
 
 class ContextById(Collection):
-    def __init__(self, request, _id=None):
-        super(ContextById, self).__init__(request)
+    def __init__(self, request, _id=None, name=None):
+        super(ContextById, self).__init__(request, name=name)
 
         # We get the object id from the request slug; the ``_id``
         # keyword argument is just for testing purposes
         self._id = _id if _id is not None else \
                    request.matchdict['slug']
+
+        self._spec = {"_id": self._id}
 
         cursor = self._collection.find({'_id': self._id})
         if cursor.count() > 1:
@@ -103,27 +110,71 @@ class ContextById(Collection):
             raise NotFound(self._id)
 
     @property
-    def __name__(self):
-        return self._id
+    def history(self):
+        """
+        Return historical versions of this :term:`context`.
+        """
+
+        query = self._collection_history.find(self._spec)
+        try:
+            data = query.next()
+        except StopIteration:
+            return []
+        else:
+            return data['versions']
+
+    def remove(self, safe=False):
+        """
+        Record current data in history and remove the entry
+        represented by this :term:`context` from the
+        :term:`collection`
+        """
+
+        self._record()
+        result = self._collection.remove(self._id, safe=safe)
+        if safe and result['err']:
+            raise result['err']
 
     def save(self):
-        return self.update(self.data)
-
-    def update(self, data):
         """
-        Update the item this ``context`` represents in its
-        :term:`collection`.
+        Save current data of this :term:`context`.
         """
 
-        self.data = data
-        self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        self._touch()
 
-        return self._collection.update(
-            {"_id": self._id},
+        result = self._collection.update(
+            self._spec,
             self.data,
             manipulate=True,
             safe=True
             )
+
+    def update(self, data):
+        """
+        Record current data in history and update the item this
+        :term:`context` represents in its :term:`collection`.
+        """
+
+        self._record()
+        self.data = data
+        self.data['_id'] = self._id
+        self.save()
+
+    def _record(self):
+        self._touch()
+        self._collection_history.update(
+            self._spec, {
+                '$push': {
+                    'versions': self.data,
+                    }
+                },
+            True
+            )
+
+    def _touch(self):
+        user = authenticated_userid(self.request)
+        self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        self.data['changed_by'] = user if user is not None else ''
 
 
 class ContextBySpec(Collection):
@@ -135,15 +186,17 @@ class ContextBySpec(Collection):
     :param unique: Should this context be a single item
     """
 
-    def __init__(self, request, spec=None, unique=True):
-        super(ContextBySpec, self).__init__(request)
+    __name__ = None
+
+    def __init__(self, request, spec=None, name=None, unique=True):
+        super(ContextBySpec, self).__init__(request, name=name)
 
         cursor = self._collection.find(spec)
         if unique:
             if cursor.count() > 1:
                 raise HTTPInternalServerError(
                     "Multiple objects found for specification: '%s'." % \
-                    self._id
+                    spec,
                     )
 
             try:
