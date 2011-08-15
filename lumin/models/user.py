@@ -10,7 +10,7 @@ from lumin.node import Collection
 class UserManagement(Collection):
     __acl__ = (
         (Allow, Everyone, 'join'),
-        (Allow, 'group:managers', ('add', 'delete')),
+        (Allow, 'group:managers', ('add', 'manage', 'delete')),
         )
 
     collection = 'users'
