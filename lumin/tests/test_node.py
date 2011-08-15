@@ -42,6 +42,9 @@ class CollectionTestCase(NodeTestCase):
         items = tuple(collection.find(_id='frobnitz'))
         self.assertEqual(len(items), 1)
 
+        items = tuple(collection.find(_id='frobnozz'))
+        self.assertEqual(len(items), 0)
+
     def test_collection_delete(self):
         # Insert item directly into collection
         self.request.db['test'].insert({'_id': 'frobnitz'}, {})

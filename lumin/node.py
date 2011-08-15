@@ -44,7 +44,7 @@ class Collection(Factory):
         return self._id
 
     def find(self, **kwargs):
-        return self._collection.find(**kwargs)
+        return self._collection.find(kwargs)
 
     def insert(self, doc, title_or_id, increment=True, seperator=u'-'):
         """
