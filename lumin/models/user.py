@@ -18,7 +18,7 @@ class UserManagement(Collection):
 
 class User(ContextById):
     __acl__ = (
-        (Allow, 'group:managers', 'view', 'edit'),
+        (Allow, 'group:managers', ('view', 'edit')),
         )
 
     collection = 'users'
