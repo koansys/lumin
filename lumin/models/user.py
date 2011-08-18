@@ -15,6 +15,9 @@ class UserManagement(Collection):
 
     collection = 'users'
 
+    def get(self, _id):
+        return User(self.request, _id=_id)
+
 
 class User(ContextById):
     __acl__ = (

@@ -35,16 +35,19 @@ class Collection(Factory):
     def __init__(self, request, name=None):
         super(Collection, self).__init__(request)
 
-        name = self._id = name if name is not None else self.collection
+        name = self.collection = name if name is not None else self.collection
         self._collection = request.db[name]
         self._collection_history = request.db['%s.history' % name]
 
     @property
     def __name__(self):
-        return self._id
+        return self.collection
 
     def find(self, **kwargs):
         return self._collection.find(kwargs)
+
+    def get(self, _id):
+        return ContextById(self.request, _id=_id, name=self.collection)
 
     def insert(self, doc, title_or_id, increment=True, seperator=u'-'):
         """

@@ -45,6 +45,16 @@ class CollectionTestCase(NodeTestCase):
         items = tuple(collection.find(_id='frobnozz'))
         self.assertEqual(len(items), 0)
 
+    def test_collection_get(self):
+        # Insert item directly into collection
+        self.request.db['test'].insert({'_id': 'frobnitz'}, {})
+
+        from lumin.node import Collection
+        collection = Collection(self.request, 'test')
+
+        item = collection.get('frobnitz')
+        self.assertEqual(item.collection, 'test')
+
     def test_collection_delete(self):
         # Insert item directly into collection
         self.request.db['test'].insert({'_id': 'frobnitz'}, {})
