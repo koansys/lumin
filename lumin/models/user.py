@@ -35,5 +35,5 @@ class User(ContextById):
                 not has_permission(permission, self, request)
                 )
 
-            if permission:
+            if permissions:
                 self.__acl__ += ((Allow, self._id, permissions),)
