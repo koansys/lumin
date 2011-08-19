@@ -1,0 +1,4 @@
+#!/bin/sh
+# Use like "./coverage" or "sh coverage" to prevent the command interjecting.
+
+../../bin/nosetests --nologcapture --nocapture --with-coverage --cover-package=lumin --cover-erase --exclude=selenium --mongodb-bin=../../bin/mongod --mongodb-port=43000 $*

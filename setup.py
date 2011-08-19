@@ -88,7 +88,7 @@ setup(name='lumin',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Topic :: Database",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Framework :: BFG",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
@@ -109,11 +109,8 @@ setup(name='lumin',
       test_suite="nose.collector",
       cmdclass = {'doc' : doc },
       entry_points = """\
-        #[console_scripts]
-        #addzope2user = lumin.scripts.adduser:main
-
-        #[paste.filter_app_factory]
-        #middleware = lumin:constructor
+        [nose.plugins.0.10]
+        mongodb = lumin.tests.mongodb:MongoDBPlugin
       """
       )
 

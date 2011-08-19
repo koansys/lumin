@@ -1,37 +1,7 @@
-import lumin
-import unittest
-import pyramid.events
-import pyramid.testing
+from lumin.tests.base import BaseFunctionalTestCase
 
 
-class NodeTestCase(unittest.TestCase):
-    def setUp(self):
-        self.request = pyramid.testing.DummyRequest()
-        self.config = pyramid.testing.setUp(
-            request=self.request,
-            settings={
-                'secret': 'secret',
-                'db_name': 'test',
-                })
-
-        self.config.include(lumin)
-        conn = self.config.register_mongodb('mongodb://localhost/')
-
-        # Drop and create test database
-        conn.drop_database('test')
-        db = conn['test']
-
-        # Create collections
-        db.create_collection('test')
-
-        # Fire new request event to set up environment
-        self.config.registry.handle(pyramid.events.NewRequest(self.request))
-
-    def tearDown(self):
-        pyramid.testing.tearDown()
-
-
-class CollectionTestCase(NodeTestCase):
+class CollectionTestCase(BaseFunctionalTestCase):
     def test_collection_find(self):
         # Insert item directly into collection
         self.request.db['test'].insert({'_id': 'frobnitz'}, {})
@@ -80,7 +50,7 @@ class CollectionTestCase(NodeTestCase):
         self.assertEqual(result, 'frobnitz-1')
 
 
-class ContextByIdTestCase(NodeTestCase):
+class ContextByIdTestCase(BaseFunctionalTestCase):
     def test_save(self):
         # Insert item directly into collection
         self.request.db['test'].insert(
@@ -136,7 +106,7 @@ class ContextByIdTestCase(NodeTestCase):
 
 
 
-class ContextBySpecTestCase(NodeTestCase):
+class ContextBySpecTestCase(BaseFunctionalTestCase):
     def test_unique(self):
         # Insert item directly into collection
         self.request.db['test'].insert(

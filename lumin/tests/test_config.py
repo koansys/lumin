@@ -1,3 +1,4 @@
+import os
 import unittest
 import pyramid.testing
 
@@ -18,7 +19,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertTrue(connection is None)
 
         # Now, let's register a database connection
-        self.config.register_mongodb('mongodb://localhost/')
+        self.config.register_mongodb(
+                        'mongodb://%s' % os.environ['TEST_MONGODB'])
         connection = self.config.registry.queryUtility(IMongoDBConnection)
         self.assertTrue(connection is not None)
 

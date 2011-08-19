@@ -1,0 +1,1 @@
+../../bin/nosetests --nologcapture --nocapture --mongodb-bin=../../bin/mongod --mongodb-port=43000 $*
