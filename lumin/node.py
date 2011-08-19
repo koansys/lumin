@@ -166,13 +166,9 @@ class ContextById(Collection):
     def _record(self):
         self._touch()
         self._collection_history.update(
-            self._spec, {
-                '$push': {
-                    'versions': self.data,
-                    }
-                },
-            True
-            )
+            self._spec, {'$push': {'versions': self.data,}},
+            manipulate=True,
+        )
 
     def _touch(self):
         user = authenticated_userid(self.request)
