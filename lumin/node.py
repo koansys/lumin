@@ -1,7 +1,11 @@
+import copy
 import datetime
-import time
 
+from bson.objectid import ObjectId
+
+from pymongo import DESCENDING
 from pymongo.errors import DuplicateKeyError
+
 from webob.exc import HTTPInternalServerError
 
 from pyramid.exceptions import NotFound
@@ -109,22 +113,57 @@ class ContextById(Collection):
 
         try:
             self.data = cursor.next()
+            self.orig = copy.deepcopy(self.data)
         except StopIteration:
             raise NotFound(self._id)
 
-    @property
-    def history(self):
+    def history(self,
+                after=True,
+                fields=[],
+                limit=10,
+                since=None,
+                sort=DESCENDING):
         """
         Return historical versions of this :term:`context`.
-        """
 
-        query = self._collection_history.find(self._spec)
-        try:
-            data = query.next()
-        except StopIteration:
-            return []
+        :param after: if since is provided, only return history items
+        after `since`. False will return items before
+        since. **Default: ``True``**
+        :params fields: a ``list`` or ``dict`` of fields to return in
+        the results. If a list it should be list of strings
+        representing the fields to return i.e. ``['mtime', ]``. If a
+        ``dict`` it should specify either fields to omit or include
+        i.e.: ``{'_id': False}`` or {'_id': False, 'title': True,
+        'changed_by': True}.
+        :param limit: The number of history records to fetch. **Default: 10**
+        :param since: a :mod:``datetime.datetime`` object representing
+        the date to use as a search point with ``after``. **Default: None**
+        :param sort: The direction to sort the history
+        items. ``DESCENDING`` provides the most recent change
+        first. **Default: ``DESCENDING``**
+                """
+        if limit is None:
+            limit = 0
+        if not isinstance(limit, int):
+            raise TypeError("expected int, recieved {}".format(type(limit)))
+        query = {'orig_id': self._id}
+        if since and isinstance(since, datetime.datetime):
+            stamp = ObjectId.from_datetime(since)
+            if after:
+                operator = "$gt"
+            else:
+                operator = "$lt"
+            query['_id'] = {operator: stamp}
+        if fields:
+            cursor = self._collection_history.find(
+                query, fields).limit(limit).sort('_id', DESCENDING)
         else:
-            return data['versions']
+            cursor = self._collection_history.find(
+                query).limit(limit).sort('_id', DESCENDING)
+        if not cursor.count():
+            raise StopIteration
+        else:
+            return cursor
 
     def remove(self, safe=False):
         """
@@ -145,29 +184,30 @@ class ContextById(Collection):
 
         self._touch()
 
-        result = self._collection.update(
+        self._collection.update(
             self._spec,
             self.data,
             manipulate=True,
-            safe=True
-            )
+            safe=True)
 
     def update(self, data):
         """
         Record current data in history and update the item this
         :term:`context` represents in its :term:`collection`.
         """
-
         self._record()
-        self.data = data
-        self.data['_id'] = self._id
+        self.data.update(data)
+        self.orig = copy.deepcopy(self.data)
         self.save()
 
     def _record(self):
         self._touch()
-        self._collection_history.update(
-            self._spec, {'$push': {'versions': self.data,}},
+        self.orig['orig_id'] = self.data['_id']
+        del self.orig['_id']
+        self._collection_history.save(
+            self.orig,
             manipulate=True,
+            safe=True
         )
 
     def _touch(self):

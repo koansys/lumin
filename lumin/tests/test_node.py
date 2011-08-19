@@ -90,8 +90,7 @@ class ContextByIdTestCase(NodeTestCase):
         context = ContextById(self.request, 'frobnitz', 'test')
         context.data.update({'title': u'Frobbozz'})
         context.save()
-
-        self.assertEqual(len(context.history), 0)
+        self.assertRaises(StopIteration, context.history)
         self.assertTrue(context.data['mtime'])
 
     def test_update(self):
@@ -123,12 +122,16 @@ class ContextByIdTestCase(NodeTestCase):
 
         # Update 2
         context.update({'title': u'Frobbozz'})
-        history = context.history
 
-        self.assertEqual(len(history), 2)
-        self.assertEqual(history[0]['title'], u'')
-        self.assertEqual(history[1]['title'], u'Frobnitz')
-        self.assertNotEqual(history[0]['mtime'], history[1]['mtime'])
+        history = context.history()
+
+        self.assertEqual(history.count(), 2)
+        obj = history.next()
+        self.assertEqual(obj['title'], u'Frobnitz')
+        self.assertNotEqual(obj['mtime'], context.data['mtime'])
+        self.assertEqual(history.next()['title'], u'')
+        self.assertEqual(context.data['title'], u'Frobbozz')
+
 
 
 class ContextBySpecTestCase(NodeTestCase):
