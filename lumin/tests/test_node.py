@@ -90,7 +90,9 @@ class ContextByIdTestCase(NodeTestCase):
         context = ContextById(self.request, 'frobnitz', 'test')
         context.data.update({'title': u'Frobbozz'})
         context.save()
-        self.assertRaises(StopIteration, context.history)
+        history = context.history()
+        self.assertEquals(history.count(), 0)
+        self.assertRaises(StopIteration, history.next)
         self.assertTrue(context.data['mtime'])
 
     def test_update(self):

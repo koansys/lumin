@@ -160,10 +160,7 @@ class ContextById(Collection):
         else:
             cursor = self._collection_history.find(
                 query).limit(limit).sort('_id', DESCENDING)
-        if not cursor.count():
-            raise StopIteration
-        else:
-            return cursor
+        return cursor
 
     def remove(self, safe=False):
         """
