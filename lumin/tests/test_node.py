@@ -51,12 +51,44 @@ class CollectionTestCase(BaseFunctionalTestCase):
 
 
 class ContextByIdTestCase(BaseFunctionalTestCase):
+
+    def test_context_with_data(self):
+        """A context can be constructed directly from document data.
+        """
+        from lumin.node import ContextById
+        self.request.db['test'].insert(
+            {'_id': 'frobnitz', 'title': u'Frobnitz'})
+        doc = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        context = ContextById(self.request, 'frobnitz', 'test', data=doc)
+        self.assertEqual(
+            context.data, {"_id": "frobnitz", "title": "Frobnitz"})
+        context.data["abc"] = 123
+        context.save()
+        doc = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        doc.pop('mtime')
+
+        self.assertEqual(
+            doc,
+            dict(_id='frobnitz', title=u'Frobnitz', abc=123, changed_by=u""))
+
+    def test_context_with_data_sans_document(self):
+        """A context without a document raises errors on lifecycle methods.
+        """
+        from lumin.node import ContextById
+        data = {"_id": "foobar", "title": "hello world"}
+        context = ContextById(self.request, 'frobnitz', 'test', data=data)
+        self.assertEqual(context.data, data)
+        self.assertRaises(KeyError, context.save)
+        # remove still works without error, but factoring in
+        # concurrency, its fine, as its the same end state.
+
     def test_save(self):
+        from lumin.node import ContextById
         # Insert item directly into collection
         self.request.db['test'].insert(
             {'_id': 'frobnitz'}, {'title': u'Frobnitz'}
             )
-        from lumin.node import ContextById
+
         context = ContextById(self.request, 'frobnitz', 'test')
         context.data.update({'title': u'Frobbozz'})
         context.save()
@@ -103,7 +135,6 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         self.assertNotEqual(obj['mtime'], context.data['mtime'])
         self.assertEqual(history.next()['title'], u'')
         self.assertEqual(context.data['title'], u'Frobbozz')
-
 
 
 class ContextBySpecTestCase(BaseFunctionalTestCase):

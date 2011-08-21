@@ -58,9 +58,16 @@ class Collection(Factory):
         Insert ``doc`` into the :term:`collection`.
 
         :param doc: A dictionary to be stored in the DB
-        :param title_or_id: a string to be normalized for a URL and used as the _id for the document.
-        :param increment: Whether to increment ``title_or_id`` if it already exists in the DB. **Default: ``True``**
-        :param seperator: carachter to separate ``title_or_id`` incremental id. **Default: ``u"-"``**
+
+        :param title_or_id: a string to be normalized for a URL and used as
+        the _id for the document.
+
+        :param increment: Whether to increment ``title_or_id`` if it
+        already exists in the DB.
+        **Default: ``True``**
+
+        :param seperator: character to separate ``title_or_id`` incremental id.
+        **Default: ``u"-"``**
         """
 
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
@@ -95,7 +102,7 @@ class Collection(Factory):
 
 
 class ContextById(Collection):
-    def __init__(self, request, _id=None, name=None):
+    def __init__(self, request, _id=None, name=None, data=None):
         super(ContextById, self).__init__(request, name=name)
 
         # We get the object id from the request slug; the ``_id``
@@ -105,17 +112,19 @@ class ContextById(Collection):
 
         self._spec = {"_id": self._id}
 
-        cursor = self._collection.find({'_id': self._id})
-        if cursor.count() > 1:
-            raise HTTPInternalServerError(
-                "Duplicate object found for '%s'." % self._id
-                )
+        if data is None:
+            try:
+                cursor = self._collection.find({'_id': self._id})
+                if cursor.count() > 1:
+                    raise HTTPInternalServerError(
+                        "Duplicate object found for '%s'." % self._id
+                        )
+                data = cursor.next()
+            except StopIteration:
+                raise NotFound(self._id)
 
-        try:
-            self.data = cursor.next()
-            self.orig = copy.deepcopy(self.data)
-        except StopIteration:
-            raise NotFound(self._id)
+        self.data = data
+        self.orig = copy.deepcopy(self.data)
 
     def history(self,
                 after=True,
@@ -180,12 +189,13 @@ class ContextById(Collection):
         """
 
         self._touch()
-
-        self._collection.update(
+        result = self._collection.update(
             self._spec,
             self.data,
             manipulate=True,
             safe=True)
+        if result["updatedExisting"] is False:
+            raise KeyError("Update failed: Document not found %r" % self._spec)
 
     def update(self, data):
         """

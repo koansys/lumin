@@ -2,7 +2,7 @@ import deform
 import re
 import unicodedata
 
-TS_FORMAT="%Y-%m-%d %H:%M:%S.%f"
+TS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 def normalize(title):

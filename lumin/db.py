@@ -87,16 +87,16 @@ class MongoUploadTmpStore(object):
         ## XXX: Total hackery
         ## TODO: remove when mongo gets TTL capped collections.
         expired = self.tempstore.files.find(
-            {'uploadDate' : {"$lt" : datetime.utcnow() - self.max_age}})
+            {'uploadDate': {"$lt": datetime.utcnow() - self.max_age}})
         for file_ in expired:
             self.fs.delete(file_['_id'])
 
     def get(self, uid, default=None):
-        result = self.tempstore.files.find_one({'metadata.uid': uid })
+        result = self.tempstore.files.find_one({'metadata.uid': uid})
         if result is None:
             return default
         oid = result['_id']
-        fp  = self.fs.get(oid)
+        fp = self.fs.get(oid)
         if fp is None:
             return default
         result['fp'] = fp
@@ -115,9 +115,9 @@ class MongoUploadTmpStore(object):
         fp = cstruct.get('fp')
         content_type = cstruct.get('mimetype')
         filename = cstruct.get('filename')
-        metadata = {'filename' : cstruct.get('filename'),
-                    'mimetype' : cstruct.get('mimetype'),
-                    'uid' : cstruct.get('uid'),
+        metadata = {'filename': cstruct.get('filename'),
+                    'mimetype': cstruct.get('mimetype'),
+                    'uid': cstruct.get('uid'),
             }
         self.fs.put(
             fp,
@@ -125,13 +125,12 @@ class MongoUploadTmpStore(object):
             filename=filename,
             metadata=metadata
             )
-        fp.seek(0) ## reset so view can read
+        fp.seek(0)  # reset so view can read
 
     def __delitem__(self, uid):
-        result = self.tempstore.files.find_one({'metadata.uid': uid })
+        result = self.tempstore.files.find_one({'metadata.uid': uid})
         oid = result['_id']
         self.fs.delete(oid)
-
 
     def preview_url(self, uid):
         return None
@@ -139,4 +138,4 @@ class MongoUploadTmpStore(object):
         if gf and gf.get('content_type') in self.image_mimetypes:
             return route_url('preview_image', self.request, uid=uid)
         else:
-            return None #route_url('preview_image', self.request, uid=uid)
+            return None  # route_url('preview_image', self.request, uid=uid)

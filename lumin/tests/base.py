@@ -3,6 +3,7 @@ import unittest
 
 import pyramid.testing
 
+
 class BaseFunctionalTestCase(unittest.TestCase):
     request_path = '/'
 

@@ -8,10 +8,11 @@ def autocomplete_id(request):
     if collection in request.db.collection_names():
         term = request.params.get('term')
         cursor = request.db[collection].find(
-            {'_id' : re.compile('.*%s.*' % term, re.IGNORECASE)})
+            {'_id': re.compile('.*%s.*' % term, re.IGNORECASE)})
         return [term['_id'] for term in cursor]
     else:
         return HTTPNotFound
+
 
 def autocomplete_name(request):
     """
@@ -21,15 +22,16 @@ def autocomplete_name(request):
     if collection in request.db.collection_names():
         term = request.params.get('term')
         cursor = request.db[collection].find(
-            {'name' : re.compile('.*%s.*' % term, re.IGNORECASE)})
+            {'name': re.compile('.*%s.*' % term, re.IGNORECASE)})
         return [term['name'] for term in cursor]
     else:
         return HTTPNotFound
 
+
 def word_suggest(request):
     text = request.params.get('term', None)
     cursor = request.db['words'].find(
-        {'_id' : re.compile('^%s.*' % text, re.IGNORECASE) })
+        {'_id': re.compile('^%s.*' % text, re.IGNORECASE)})
     return [text['_id'] for text in cursor]
 
   # Sample zcml config

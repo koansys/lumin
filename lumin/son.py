@@ -6,13 +6,15 @@ import colander
 
 SENTINEL = {u'_type': u'colander.null'}
 
+
 class ColanderNullTransformer(SONManipulator):
     """
-    Added to the db after connection is created. This allows MongoDB to store and
-    retrieve sentinals for ``colander.null`` values. ``colander.null``
-    is a object which represents that a colander.Schema value is
-    missing or undefined. A :term:`son_manipulator` is a object that
-    edits :term:`SON` objects as they enter or exit a MongoDB
+    Added to the db after connection is created. This allows MongoDB
+    to store and retrieve sentinals for ``colander.null``
+    values. ``colander.null`` is a object which represents that a
+    colander.Schema value is missing or undefined. A
+    :term:`son_manipulator` is a object that edits :term:`SON` objects
+    as they enter or exit a MongoDB
 
     .. code-block:: python
 
@@ -41,7 +43,7 @@ class ColanderNullTransformer(SONManipulator):
         """
         for (k, v) in son.items():
             if isinstance(v, dict):
-                if v !=SENTINEL:
+                if v != SENTINEL:
                     self._recursive_out(v)
                 elif v == SENTINEL:
                     son[k] = colander.null
@@ -94,7 +96,7 @@ class DecimalTransformer(SONManipulator):
         """
         for (k, v) in son.items():
             if isinstance(v, Decimal):
-                son[k] = {'_type' : 'decimal', 'value' : unicode(v)}
+                son[k] = {'_type': 'decimal', 'value': unicode(v)}
             elif isinstance(v, dict):
                 son[k] = self.transform_incoming(v, collection)
         return son
@@ -107,9 +109,9 @@ class DecimalTransformer(SONManipulator):
         for (k, v) in son.items():
             if isinstance(v, dict):
                 if "_type" in v and v["_type"] == "decimal":
-                   son[k] = Decimal(v['value'])
+                    son[k] = Decimal(v['value'])
                 else:
-                   son[k] = self.transform_outgoing(v, collection)
+                    son[k] = self.transform_outgoing(v, collection)
         return son
 
 
@@ -192,4 +194,3 @@ class DeSentinel:
                     if isinstance(value, dict):
                         self._recurse(value)
 desentinel = DeSentinel()
-
