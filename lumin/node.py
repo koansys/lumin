@@ -115,11 +115,11 @@ class ContextById(Collection):
         # We get the object id from the request slug; the ``_id``
         # keyword argument is just for testing purposes
         self._id = _id if _id is not None else \
-                   request.matchdict['slug']
+                   request.matchdict.get('slug', None)
 
         self._spec = {"_id": self._id}
 
-        if data is None:
+        if self._id and data is None:
             try:
                 cursor = self._collection.find({'_id': self._id})
                 if cursor.count() > 1:
@@ -130,7 +130,7 @@ class ContextById(Collection):
             except StopIteration:
                 raise NotFound(self._id)
 
-        self.data = data
+        self.data = data if data else {}
         self.orig = copy.deepcopy(self.data)
 
     def history(self,
