@@ -20,9 +20,9 @@ from lumin.util import normalize
 class Factory(object):
     """Pyramid context factory base class."""
 
-    __acl__ = [
-            (Allow, Everyone, 'view'),
-        ]
+    _default__acl__ = __acl__ = [
+              (Allow, Everyone, 'view'),
+    ]
 
     __name__ = __parent__ = None
 
@@ -107,8 +107,10 @@ class Collection(Factory):
         self._collection.save(to_save, manipulate, safe, kwargs)
 
 
-
 class ContextById(Collection):
+
+    _default__acl__ = []
+
     def __init__(self, request, _id=None, name=None, data=None):
         super(ContextById, self).__init__(request, name=name)
 
@@ -132,6 +134,34 @@ class ContextById(Collection):
 
         self.data = data if data else {}
         self.orig = copy.deepcopy(self.data)
+        for ace in self._default__acl__:
+            if ace not in self.__acl__:
+                self.add_ace(ace)
+
+    def get__acl__(self):
+        return self.data.get('__acl__', [])
+
+    def set__acl__(self, acl):
+        self.data['__acl__'] = acl
+
+    def delete__acl__(self):
+        del self.data['__acl__']
+
+    __acl__ = property(get__acl__, set__acl__, delete__acl__)
+
+    def add_ace(self, ace):
+        if not self.__acl__:
+            self.data['__acl__'] = [ace]
+        elif ace not in self.__acl__:
+            self.data['__acl__'].append(ace)
+
+    def remove_ace(self, ace):
+        if ace in self.__acl__:
+            self.data['__acl__'].remove(ace)
+
+    @property
+    def __name__(self):
+        return self._id
 
     def history(self,
                 after=True,

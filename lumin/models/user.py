@@ -36,4 +36,4 @@ class User(ContextById):
                 )
 
             if permissions:
-                self.__acl__ += ((Allow, self._id, permissions),)
+                self.add_ace((Allow, self._id, permissions))

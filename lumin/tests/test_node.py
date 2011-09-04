@@ -136,6 +136,62 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         self.assertEqual(history.next()['title'], u'')
         self.assertEqual(context.data['title'], u'Frobbozz')
 
+    def test_empty_default__acl__(self):
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+
+        from lumin.node import ContextById
+
+        context = ContextById(self.request, 'frobnitz', 'test')
+        self.assertEquals(context.__acl__, [])
+
+        context.__acl__ = [(1, 2, 3)]
+        self.assertEquals(context.__acl__, [(1, 2, 3)])
+        context.save()
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failUnless(document.get('__acl__', None), [(1, 2, 3)])
+
+        del context.__acl__
+        self.assertEquals(context.__acl__, [])
+        context.save()
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failIf(document.get('__acl__', None))
+
+    def test_with_default__acl__(self):
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        from lumin.node import ContextById
+
+        class AContext(ContextById):
+            _default__acl__ = [(1, 2, 3)]
+
+        context = AContext(self.request, 'frobnitz', 'test')
+        self.assertEquals(context.__acl__, [(1, 2, 3)])
+        context.save()
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failUnless(document.get('__acl__'), [(1, 2, 3)])
+
+    def test_add_and_remove_ace(self):
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        from lumin.node import ContextById
+
+        class AContext(ContextById):
+            _default__acl__ = [(1, 2, 3)]
+
+        context = AContext(self.request, 'frobnitz', 'test')
+        self.assertEquals(context.__acl__, [(1, 2, 3)])
+        context.save()
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failUnless(document.get('__acl__'), [(1, 2, 3)])
+
+        context.add_ace(('a', 'b', 'c'))
+        self.assertEquals(context.__acl__, [(1, 2, 3), ('a', 'b', 'c')])
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failUnless(document.get('__acl__'), [(1, 2, 3), ('a', 'b', 'c')])
+
+        context.remove_ace((1, 2, 3))
+        self.assertEquals(context.__acl__, [('a', 'b', 'c')])
+        document = self.request.db['test'].find_one({'_id': 'frobnitz'})
+        self.failUnless(document.get('__acl__'), [('a', 'b', 'c')])
+
 
 class ContextBySpecTestCase(BaseFunctionalTestCase):
     def test_unique(self):
