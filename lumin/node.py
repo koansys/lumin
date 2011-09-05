@@ -182,6 +182,7 @@ class ContextById(Collection):
         i.e.: ``{'_id': False}`` or {'_id': False, 'title': True,
         'changed_by': True}.
         :param limit: The number of history records to fetch. **Default: 10**
+
         :param since: a :mod:``datetime.datetime`` object representing
         the date to use as a search point with ``after``. **Default: None**
         :param sort: The direction to sort the history
@@ -265,26 +266,202 @@ class ContextBySpec(Collection):
     Like ContextById but takes a *spec*ifying dictionary instead.
 
     :param request: A pyramid request object
-    :param spec: A dictionary to use to extract the desired item from the DB
+    :param _id: An _id to use in a specifying dictionary
+    :param name: A collection name
+    :param data: Allows construction from dict
     :param unique: Should this context be a single item
+    which represent the slug in the url
     """
-
-    __name__ = None
-
-    def __init__(self, request, spec=None, name=None, unique=True):
-        super(ContextBySpec, self).__init__(request, name=name)
-
-        cursor = self._collection.find(spec)
-        if unique:
+    def __init__(self,
+                 request,
+                 _id=None,
+                 name=None,
+                 data=None,
+                 spec={}):
+        super(ContextBySpec, self).__init__(request, name)
+        self._spec = spec
+        self._spec.update({'slug_id': _id})
+        if self._spec and data is None:
+            cursor = self._collection.find(self._spec)
             if cursor.count() > 1:
                 raise HTTPInternalServerError(
                     "Multiple objects found for specification: '%s'." % \
-                    spec,
-                    )
-
+                    self._spec,
+            )
             try:
                 self.data = cursor.next()
             except StopIteration:
-                raise NotFound(spec)
+                raise NotFound(repr(self._spec))
+
+        self.data = data if data else {}
+        self.orig = copy.deepcopy(self.data)
+        for ace in self._default__acl__:
+            if ace not in self.__acl__:
+                self.add_ace(ace)
+
+    def get__acl__(self):
+        return self.data.get('__acl__', [])
+
+    def set__acl__(self, acl):
+        self.data['__acl__'] = acl
+
+    def delete__acl__(self):
+        del self.data['__acl__']
+
+    __acl__ = property(get__acl__, set__acl__, delete__acl__)
+
+    def add_ace(self, ace):
+        if not self.__acl__:
+            self.data['__acl__'] = [ace]
+        elif ace not in self.__acl__:
+            self.data['__acl__'].append(ace)
+
+    def remove_ace(self, ace):
+        if ace in self.__acl__:
+            self.data['__acl__'].remove(ace)
+
+    def get_slug_id(self):
+        return self.data.get('slug_id', None)
+
+    def set_slug_id(self, slug):
+        self.data['slug_id'] = slug
+
+    slug_id = property(get_slug_id, set_slug_id)
+
+    @property
+    def __name__(self):
+        return self._id
+
+    def history(self,
+                after=True,
+                fields=[],
+                limit=10,
+                since=None,
+                sort=DESCENDING):
+        """
+        Return historical versions of this :term:`context`.
+
+        :param after: if since is provided, only return history items
+        after `since`. False will return items before
+        since. **Default: ``True``**
+        :params fields: a ``list`` or ``dict`` of fields to return in
+        the results. If a list it should be list of strings
+        representing the fields to return i.e. ``['mtime', ]``. If a
+        ``dict`` it should specify either fields to omit or include
+        i.e.: ``{'_id': False}`` or {'_id': False, 'title': True,
+        'changed_by': True}.
+        :param limit: The number of history records to fetch. **Default: 10**
+
+        :param since: a :mod:``datetime.datetime`` object representing
+        the date to use as a search point with ``after``. **Default: None**
+        :param sort: The direction to sort the history
+        items. ``DESCENDING`` provides the most recent change
+        first. **Default: ``DESCENDING``**
+                """
+        if limit is None:
+            limit = 0
+        if not isinstance(limit, int):
+            raise TypeError("expected int, recieved {}".format(type(limit)))
+        query = {'orig_id': self.data['_id']}
+        if since and isinstance(since, datetime.datetime):
+            stamp = ObjectId.from_datetime(since)
+            if after:
+                operator = "$gt"
+            else:
+                operator = "$lt"
+            query['_id'] = {operator: stamp}
+        if fields:
+            cursor = self._collection_history.find(
+                query, fields).limit(limit).sort('_id', DESCENDING)
         else:
-            self.data = tuple(cursor)
+            cursor = self._collection_history.find(
+                query).limit(limit).sort('_id', DESCENDING)
+        return cursor
+
+    def insert(self, doc, title_or_id, increment=True, seperator=u'-'):
+        """
+        Insert ``doc`` into the :term:`collection`.
+
+        :param doc: A dictionary to be stored in the DB
+
+        :param title_or_id: a string to be normalized for a URL and used as
+        the slug_id for the document.
+
+        :param increment: Whether to increment ``title_or_id`` if it
+        already exists in the DB.
+        **Default: ``True``**
+
+        :param seperator: character to separate ``title_or_id`` incremental id.
+        **Default: ``u"-"``**
+        """
+
+        ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        doc['ctime'] = ctime
+        doc['mtime'] = mtime
+        doc['slug_id'] = normalize(title_or_id)
+        if increment:
+            suffix = 0
+            _id = doc['slug_id']
+            while True:
+                try:
+                    self._collection.insert(doc, safe=True)
+                    break
+                except DuplicateKeyError as e:
+                    suffix += 1
+                    slug_id_suffixed = seperator.join([_id, unicode(suffix)])
+                    doc['slug_id'] = slug_id_suffixed
+        else:
+            self._collection.insert(doc, safe=True)
+
+        return {key: val for key, val in doc.items() if key in self._spec}
+
+    def remove(self, safe=False):
+        """
+        Record current data in history and remove the entry
+        represented by this :term:`context` from the
+        :term:`collection`
+        """
+
+        self._record()
+        result = self._collection.remove(self._id, safe=safe)
+        if safe and result['err']:
+            raise result['err']
+
+    def save(self):
+        """
+        Save current data of this :term:`context`.
+        """
+
+        self._touch()
+        result = self._collection.update(
+            self._spec,
+            self.data,
+            manipulate=True,
+            safe=True)
+        if result["updatedExisting"] is False:
+            raise KeyError("Update failed: Document not found %r" % self._spec)
+
+    def update(self, data):
+        """
+        Record current data in history and update the item this
+        :term:`context` represents in its :term:`collection`.
+        """
+        self._record()
+        self.data.update(data)
+        self.orig = copy.deepcopy(self.data)
+        self.save()
+
+    def _record(self):
+        self._touch()
+        self.orig['orig_id'] = self.data['_id']
+        del self.orig['_id']
+        self._collection_history.save(
+            self.orig,
+            manipulate=True,
+            safe=True
+        )
+
+    def _touch(self):
+        user = authenticated_userid(self.request)
+        self.data['mtime'] = datetime.datetime.utcnow().strftime(TS_FORMAT)
+        self.data['changed_by'] = user if user is not None else ''
