@@ -280,7 +280,7 @@ class ContextBySpec(Collection):
                  spec={}):
         super(ContextBySpec, self).__init__(request, name)
         self._spec = spec
-        self._spec.update({'slug_id': _id})
+        self._spec.update({'__name__': _id})
         if self._spec and data is None:
             cursor = self._collection.find(self._spec)
             if cursor.count() > 1:
@@ -320,17 +320,17 @@ class ContextBySpec(Collection):
         if ace in self.__acl__:
             self.data['__acl__'].remove(ace)
 
-    def get_slug_id(self):
-        return self.data.get('slug_id', None)
+    def get___name__(self):
+        return self.data.get('__name__', None)
 
-    def set_slug_id(self, slug):
-        self.data['slug_id'] = slug
+    def set___name__(self, slug):
+        self.data['__name__'] = slug
 
-    slug_id = property(get_slug_id, set_slug_id)
+    __name__ = property(get___name__, set___name__)
 
     @property
-    def __name__(self):
-        return self._id
+    def _oid(self):
+        return self.data.get('_id', None)
 
     def history(self,
                 after=True,
@@ -385,7 +385,7 @@ class ContextBySpec(Collection):
         :param doc: A dictionary to be stored in the DB
 
         :param title_or_id: a string to be normalized for a URL and used as
-        the slug_id for the document.
+        the __name__ for the document.
 
         :param increment: Whether to increment ``title_or_id`` if it
         already exists in the DB.
@@ -398,18 +398,18 @@ class ContextBySpec(Collection):
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
         doc['ctime'] = ctime
         doc['mtime'] = mtime
-        doc['slug_id'] = normalize(title_or_id)
+        doc['__name__'] = normalize(title_or_id)
         if increment:
             suffix = 0
-            _id = doc['slug_id']
+            _id = doc['__name__']
             while True:
                 try:
                     self._collection.insert(doc, safe=True)
                     break
                 except DuplicateKeyError as e:
                     suffix += 1
-                    slug_id_suffixed = seperator.join([_id, unicode(suffix)])
-                    doc['slug_id'] = slug_id_suffixed
+                    __name___suffixed = seperator.join([_id, unicode(suffix)])
+                    doc['__name__'] = __name___suffixed
         else:
             self._collection.insert(doc, safe=True)
 
