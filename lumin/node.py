@@ -150,12 +150,20 @@ class ContextById(Collection):
     __acl__ = property(get__acl__, set__acl__, delete__acl__)
 
     def add_ace(self, ace):
-        if not self.__acl__:
+        if not isinstance(ace, list):
+            raise TypeError(
+                "{} is not a list, mongo stores tuples as a list."
+                "Please use lists".format(ace))
+        if not '__acl__' in self.data:
             self.data['__acl__'] = [ace]
         elif ace not in self.__acl__:
             self.data['__acl__'].append(ace)
 
     def remove_ace(self, ace):
+        if not isinstance(ace, list):
+            raise TypeError(
+                "{} is not a list, mongo stores tuples as a list."
+                "Please use lists".format(ace))
         if ace in self.__acl__:
             self.data['__acl__'].remove(ace)
 
@@ -311,12 +319,20 @@ class ContextBySpec(Collection):
     __acl__ = property(get__acl__, set__acl__, delete__acl__)
 
     def add_ace(self, ace):
-        if not self.__acl__:
+        if not isinstance(ace, list):
+            raise TypeError(
+                "{} is not a list, mongo stores tuples as a list."
+                "Please use lists".format(ace))
+        if not '__acl__' in self.data:
             self.data['__acl__'] = [ace]
         elif ace not in self.__acl__:
             self.data['__acl__'].append(ace)
 
     def remove_ace(self, ace):
+        if not isinstance(ace, list):
+            raise TypeError(
+                "{} is not a list, mongo stores tuples as a list."
+                "Please use lists".format(ace))
         if ace in self.__acl__:
             self.data['__acl__'].remove(ace)
 
