@@ -223,7 +223,7 @@ class ContextById(Collection):
         represented by this :term:`context` from the
         :term:`collection`
         """
-
+        self.data['deleted'] = True
         self._record()
         result = self._collection.remove(self._id, safe=safe)
         if safe and result['err']:
