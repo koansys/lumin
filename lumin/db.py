@@ -39,8 +39,8 @@ def add_mongodb(event):
     event.request.fs = GridFS(db)
 
 
-def register_mongodb(config, db_uri):
-    conn = pymongo.Connection(db_uri)
+def register_mongodb(config, db_uri, slave_okay=False):
+    conn = pymongo.Connection(db_uri, slave_okay=slave_okay)
     config.registry.registerUtility(conn, IMongoDBConnection)
     return conn
 
