@@ -283,13 +283,19 @@ class ContextBySpec(Collection):
     def __init__(self,
                  request,
                  _id=None,
-                 name=None,
+                 name=None, ## NB: collection name
                  data=None,
                  spec={}):
         super(ContextBySpec, self).__init__(request, name)
+        if _id and spec:
+            raise AssertionError("provide either an _id or a spec not both")
         self._spec = spec
-        self._spec.update({'__name__': _id})
+        if _id:
+            ## If we get an ID use it instad od the multi key spec
+            ## TODO: Should we enforce ObjectId instance?
+            self._spec = {'_id': _id}
         if self._spec and data is None:
+            ## If we have a spec let's look for it in the db
             cursor = self._collection.find(self._spec)
             if cursor.count() > 1:
                 raise HTTPInternalServerError(
@@ -297,11 +303,18 @@ class ContextBySpec(Collection):
                     self._spec,
             )
             try:
+                ## set data to teh document found
                 self.data = cursor.next()
             except StopIteration:
+                ## or it doesn't exist
                 raise NotFound(repr(self._spec))
-
-        self.data = data if data else {}
+        else:
+            ## if we didn't have an _id or spec
+            ## let's assign data and update
+            ## the spec to the doc _id
+            self.data = data if data else {}
+            self._spec['_id'] = self._oid
+        ## make a copy of the dat for history tracking
         self.orig = copy.deepcopy(self.data)
         for ace in self._default__acl__:
             if ace not in self.__acl__:
@@ -447,7 +460,6 @@ class ContextBySpec(Collection):
         """
         Save current data of this :term:`context`.
         """
-
         self._touch()
         result = self._collection.update(
             self._spec,
