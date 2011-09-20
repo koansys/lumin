@@ -17,6 +17,11 @@ def normalize(title):
     return re.sub('[-\s]+', '-', url_safe)
 
 
+class Structure(unicode):
+    def __html__(self):
+        return self
+
+
 ## buttons
 reset = deform.form.Button(name='reset', title='Reset',
                            type='reset', value='reset')
@@ -32,3 +37,4 @@ $(document).ready(function () {
        });
 });
 """
+
