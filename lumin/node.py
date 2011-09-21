@@ -171,6 +171,10 @@ class ContextById(Collection):
     def __name__(self):
         return self._id
 
+    @property
+    def oid(self):
+        return self.data.get('_id', None)
+
     def history(self,
                 after=True,
                 fields=[],
