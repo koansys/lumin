@@ -345,7 +345,7 @@ class ContextBySpec(Collection):
     __name__ = property(get___name__, set___name__)
 
     @property
-    def _oid(self):
+    def oid(self):
         return self.data.get('_id', None)
 
     def history(self,
