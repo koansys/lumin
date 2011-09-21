@@ -100,11 +100,11 @@ class Collection(Factory):
         if safe and result['err']:
             raise result['err']
 
-    def save(self, to_save, manipulate=True, safe=False, **kwargs):
+    def save(self, to_save, manipulate=True, safe=False):
         """
         Exposes the native pymongo save method
         """
-        self._collection.save(to_save, manipulate, safe, kwargs)
+        self._collection.save(to_save, manipulate, safe)
 
 
 class ContextById(Collection):
