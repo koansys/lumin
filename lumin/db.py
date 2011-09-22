@@ -84,6 +84,7 @@ class MongoUploadTmpStore(object):
                                                collection=self.__collection__)
         self.tempstore = request.db[self.__collection__]
         self.max_age = timedelta(seconds=max_age)
+        self.image_mimetypes = image_mimetypes
         ## XXX: Total hackery
         ## TODO: remove when mongo gets TTL capped collections.
         expired = self.tempstore.files.find(
@@ -92,7 +93,7 @@ class MongoUploadTmpStore(object):
             self.fs.delete(file_['_id'])
 
     def get(self, uid, default=None):
-        result = self.tempstore.files.find_one({'metadata.uid': uid})
+        result = self.tempstore.files.find_one({'uid': uid})
         if result is None:
             return default
         oid = result['_id']
@@ -113,17 +114,11 @@ class MongoUploadTmpStore(object):
 
     def __setitem__(self, oid, cstruct):
         fp = cstruct.get('fp')
-        content_type = cstruct.get('mimetype')
-        filename = cstruct.get('filename')
-        metadata = {'filename': cstruct.get('filename'),
-                    'mimetype': cstruct.get('mimetype'),
-                    'uid': cstruct.get('uid'),
-            }
         self.fs.put(
             fp,
-            content_type=content_type,
-            filename=filename,
-            metadata=metadata
+            mimetype=cstruct.get('mimetype'),
+            filename=cstruct.get('filename'),
+            uid=cstruct.get('uid')
             )
         fp.seek(0)  # reset so view can read
 
@@ -133,9 +128,8 @@ class MongoUploadTmpStore(object):
         self.fs.delete(oid)
 
     def preview_url(self, uid):
-        return None
         gf = self.get(uid)
-        if gf and gf.get('content_type') in self.image_mimetypes:
+        if gf and gf.get('mimetype') in self.image_mimetypes:
             return route_url('preview_image', self.request, uid=uid)
         else:
             return None  # route_url('preview_image', self.request, uid=uid)
