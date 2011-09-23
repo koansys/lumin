@@ -97,8 +97,15 @@ class Collection(Factory):
         :term:`collection`
         """
         result = self._collection.remove(_id, safe=safe)
-        if safe and result['err']:
+
+        # No return value for "unsafe" request
+        if not safe:
+            return
+
+        if result['err']:
             raise result['err']
+
+        return bool(result['n'])
 
     def save(self, to_save, manipulate=True, safe=False):
         """
