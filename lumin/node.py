@@ -21,7 +21,7 @@ class Factory(object):
     """Pyramid context factory base class."""
 
     __default_acl__ = __acl__ = [
-              (Allow, Everyone, 'view'),
+              [Allow, Everyone, 'view'],
     ]
 
     __name__ = __parent__ = None
