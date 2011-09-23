@@ -81,7 +81,7 @@ class GridFile:
     """
     GirdFile Factory
     """
-    _default__acl__ = [
+    __default_acl__ = [
         (Allow, 'group:managers', ('add', 'delete', 'edit', 'view')),
         ]
 
@@ -97,7 +97,7 @@ class GridFile:
 
     @property
     def __acl__(self):
-        return self.gf.metadata.get('__acl__', self._default__acl__)
+        return self.gf.metadata.get('__acl__', self.__default_acl__)
 
     def response(self):
         return Response(

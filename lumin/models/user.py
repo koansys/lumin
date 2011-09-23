@@ -20,7 +20,7 @@ class UserManagement(Collection):
 
 
 class User(ContextById):
-    __acl__ = (
+    __default_acl__ = (
         (Allow, 'group:managers', ('view', 'edit')),
         )
 

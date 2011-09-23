@@ -20,7 +20,7 @@ from lumin.util import normalize
 class Factory(object):
     """Pyramid context factory base class."""
 
-    _default__acl__ = __acl__ = [
+    __default_acl__ = __acl__ = [
               (Allow, Everyone, 'view'),
     ]
 
@@ -109,7 +109,7 @@ class Collection(Factory):
 
 class ContextById(Collection):
 
-    _default__acl__ = []
+    __default_acl__ = []
 
     def __init__(self, request, _id=None, name=None, data=None):
         super(ContextById, self).__init__(request, name=name)
@@ -134,7 +134,7 @@ class ContextById(Collection):
 
         self.data = data if data else {}
         self.orig = copy.deepcopy(self.data)
-        for ace in self._default__acl__:
+        for ace in self.__default_acl__:
             if ace not in self.__acl__:
                 self.add_ace(ace)
 
@@ -307,7 +307,7 @@ class ContextBySpec(Collection):
 
         self.data = data if data else {}
         self.orig = copy.deepcopy(self.data)
-        for ace in self._default__acl__:
+        for ace in self.__default_acl__:
             if ace not in self.__acl__:
                 self.add_ace(ace)
 
