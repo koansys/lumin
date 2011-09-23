@@ -10,7 +10,7 @@ class MongoUploadTmpStore(unittest.TestCase):
         self.config.end()
 
     def _makeOne(self, request):
-        from lumin.db import MongoUploadTmpStore
+        from lumin.grid_fs import MongoUploadTmpStore
         return MongoUploadTmpStore(request, gridfs=request.fs)
 
     def _makeRequest(self, db, fs):
@@ -20,7 +20,7 @@ class MongoUploadTmpStore(unittest.TestCase):
         request.fs = fs
         return request
 
-    
+
 
 class DummyLogger(object):
     def __init__(self):
