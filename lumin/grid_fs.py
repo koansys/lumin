@@ -11,7 +11,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.security import Allow
 from pyramid.url import route_url
-from pyramid.view import view_config
 
 
 class MongoUploadTmpStore(object):
@@ -112,12 +111,8 @@ class GridFile:
 
 
 #@view_config(route_name='files')
-def grid_files(request):
-    """Return a file from the GridFS based on its OID.
-    Set MimeType, ContentLength, etc appropriately.
-    If our GridFS object doesn't have these, omit them from HTTP headers.
-    """
-    return request.context.response()
+# def grid_files(request):
+#     return request.context.response()
 
 
 #def add_gridfs_routes(config):
