@@ -9,8 +9,8 @@ from lumin.node import Collection
 
 class UserManagement(Collection):
     __acl__ = (
-        (Allow, Everyone, 'join'),
-        (Allow, 'group:managers', ('add', 'manage', 'delete')),
+        [Allow, Everyone, 'join'],
+        [Allow, 'group:managers', ['add', 'manage', 'delete']],
         )
 
     collection = 'users'
@@ -21,7 +21,7 @@ class UserManagement(Collection):
 
 class User(ContextById):
     __default_acl__ = (
-        (Allow, 'group:managers', ('view', 'edit')),
+        [Allow, 'group:managers', ['view', 'edit']],
         )
 
     collection = 'users'
