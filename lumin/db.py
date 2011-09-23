@@ -14,12 +14,6 @@ from pyramid.threadlocal import get_current_registry
 
 from lumin.son import ColanderNullTransformer
 
-memcache = None
-try:
-    import memcache
-except ImportError:
-    pass
-
 
 class IMongoDBConnection(Interface):
     pass
@@ -54,18 +48,14 @@ def get_memcached():
     reg = get_current_registry()
     return reg.queryUtility(IMemcachedClient)
 
-
 @subscriber(INewRequest)
 def add_memcached(event):
     mc = get_memcached()
     if mc:
         event.request.mc = mc
 
-
 def register_memcached(config, mc_host):
-    if memcache is None:
-        # Raise import error exception
-        import memcached
+    import memcache
 
     mc_conn = memcache.Client([mc_host])
     config.registry.registerUtility(mc_conn, IMemcachedClient)
