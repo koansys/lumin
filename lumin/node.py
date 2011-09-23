@@ -443,7 +443,7 @@ class ContextBySpec(Collection):
         """
 
         self._record()
-        result = self._collection.remove(self._oid, safe=safe)
+        result = self._collection.remove(self.oid, safe=safe)
         if safe and result['err']:
             raise result['err']
 
