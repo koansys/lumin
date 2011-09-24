@@ -20,9 +20,9 @@ class UserManagement(Collection):
 
 
 class User(ContextById):
-    __default_acl__ = (
-        [Allow, 'group:managers', ['view', 'edit']],
-        )
+    _default__acl__ = [
+        [Allow, 'group:managers', ['view', 'edit', 'delete', 'manage', 'add']],
+        ]
 
     collection = 'users'
 
