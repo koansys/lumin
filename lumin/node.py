@@ -20,8 +20,8 @@ from lumin.util import normalize
 class Factory(object):
     """Pyramid context factory base class."""
 
-    _default__acl__ = __acl__ = [
-              (Allow, Everyone, 'view'),
+    __default_acl__ = __acl__ = [
+              [Allow, Everyone, 'view'],
     ]
 
     __name__ = __parent__ = None
@@ -97,19 +97,26 @@ class Collection(Factory):
         :term:`collection`
         """
         result = self._collection.remove(_id, safe=safe)
-        if safe and result['err']:
+
+        # No return value for "unsafe" request
+        if not safe:
+            return
+
+        if result['err']:
             raise result['err']
 
-    def save(self, to_save, manipulate=True, safe=False, **kwargs):
+        return bool(result['n'])
+
+    def save(self, to_save, manipulate=True, safe=False):
         """
         Exposes the native pymongo save method
         """
-        self._collection.save(to_save, manipulate, safe, kwargs)
+        self._collection.save(to_save, manipulate, safe)
 
 
 class ContextById(Collection):
 
-    _default__acl__ = []
+    __default_acl__ = []
 
     def __init__(self, request, _id=None, name=None, data=None):
         super(ContextById, self).__init__(request, name=name)
@@ -134,7 +141,7 @@ class ContextById(Collection):
 
         self.data = data if data else {}
         self.orig = copy.deepcopy(self.data)
-        for ace in self._default__acl__:
+        for ace in self.__default_acl__:
             if ace not in self.__acl__:
                 self.add_ace(ace)
 
@@ -170,6 +177,10 @@ class ContextById(Collection):
     @property
     def __name__(self):
         return self._id
+
+    @property
+    def oid(self):
+        return self.data.get('_id', None)
 
     def history(self,
                 after=True,
@@ -316,7 +327,7 @@ class ContextBySpec(Collection):
             self._spec['_id'] = self._oid
         ## make a copy of the dat for history tracking
         self.orig = copy.deepcopy(self.data)
-        for ace in self._default__acl__:
+        for ace in self.__default_acl__:
             if ace not in self.__acl__:
                 self.add_ace(ace)
 
@@ -358,7 +369,7 @@ class ContextBySpec(Collection):
     __name__ = property(get___name__, set___name__)
 
     @property
-    def _oid(self):
+    def oid(self):
         return self.data.get('_id', None)
 
     def history(self,
@@ -452,7 +463,7 @@ class ContextBySpec(Collection):
         """
 
         self._record()
-        result = self._collection.remove(self._oid, safe=safe)
+        result = self._collection.remove(self.oid, safe=safe)
         if safe and result['err']:
             raise result['err']
 
