@@ -12,6 +12,22 @@ class GroupFinder:
         except StopIteration:
             user = None
         if user and not user.get('disabled', None):
-            return user['groups']
+            groups = set(user['groups'])
+
+            try:
+                roles = request.context.data['__roles__']
+            except (AttributeError, KeyError):
+                return groups
+
+            if roles:
+                principals = set(groups)
+                principals.add(user['_id'])
+                check = principals.__contains__
+
+                for role, principals in roles.items():
+                    if any(check(p) for p in principals):
+                        groups.add(role)
+
+            return groups
 
 groupfinder = GroupFinder()
