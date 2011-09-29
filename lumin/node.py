@@ -324,7 +324,6 @@ class ContextBySpec(Collection):
             ## let's assign data and update
             ## the spec to the doc _id
             self.data = data if data else {}
-            self._spec['_id'] = self._oid
         ## make a copy of the dat for history tracking
         self.orig = copy.deepcopy(self.data)
         for ace in self.__default_acl__:
