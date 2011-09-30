@@ -291,12 +291,15 @@ class ContextBySpec(Collection):
     :param unique: Should this context be a single item
     which represent the slug in the url
     """
+    _default__acl__ = []
+
     def __init__(self,
                  request,
                  _id=None,
                  name=None,
                  data=None,
                  spec={}):
+
         super(ContextBySpec, self).__init__(request, name)
         self._spec = spec
         self._spec.update({'__name__': _id})
