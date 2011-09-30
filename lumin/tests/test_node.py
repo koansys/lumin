@@ -136,7 +136,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         self.assertEqual(history.next()['title'], u'')
         self.assertEqual(context.data['title'], u'Frobbozz')
 
-    def test_empty_default_acl(self):
+    def test_empty_default__acl__(self):
         self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
 
         from lumin.node import ContextById
@@ -156,12 +156,12 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         document = self.request.db['test'].find_one({'_id': 'frobnitz'})
         self.failIf(document.get('__acl__', None))
 
-    def test_with_default_acl(self):
+    def test_with_default__acl__(self):
         self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
         from lumin.node import ContextById
 
         class AContext(ContextById):
-            __default_acl__ = [[1, 2, 3]]
+            _default__acl__ = [[1, 2, 3]]
 
         context = AContext(self.request, 'frobnitz', 'test')
         self.assertEquals(context.__acl__, [[1, 2, 3]])
@@ -174,7 +174,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         from lumin.node import ContextById
 
         class AContext(ContextById):
-            __default_acl__ = [[1, 2, 3]]
+            _default__acl__ = [[1, 2, 3]]
 
         context = AContext(self.request, 'frobnitz', 'test')
         self.assertEquals(context.__acl__, [[1, 2, 3]])
