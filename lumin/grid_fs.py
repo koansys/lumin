@@ -103,11 +103,12 @@ class GridFile:
         return Response(
             body=self.gf.read(),
             content_disposition='attachment; filename={}'.format(
-                self.gf.filename),
-            content_type=self.gf.content_type if self.gf.content_type \
-                else 'binary/octet-stream',
+                self.gf.filename.encode('utf8')),
+            content_type=self.gf.content_type.encode('utf8') if \
+                self.gf.content_type else 'binary/octet-stream',
             content_length=self.gf.length
             )
+
 
 
 #@view_config(route_name='files')
