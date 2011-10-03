@@ -307,6 +307,8 @@ class ContextBySpec(Collection):
         if _id:
             ## If we get an ID use it instad od the multi key spec
             ## TODO: Should we enforce ObjectId instance?
+            ## This should probably be enforced as bson.oid
+            ## See the note in this if's else clause.
             self._spec = {'_id': _id}
         if self._spec and data is None:
             ## If we have a spec let's look for it in the db
@@ -327,6 +329,19 @@ class ContextBySpec(Collection):
             ## let's assign data and update
             ## the spec to the doc _id
             self.data = data if data else {}
+            ## If there is a real object set the actual id to the doc
+            ## _id which would not be the same as the spec.  currently
+            ## and wrongly the _id is usually set to the __name__
+            ## which wouldn't be correct. The spec oid would never be
+            ## the _id in COntextBySpecor we should be using
+            ## contextById instead...This assignment sets the _id to
+            ## be the bson.ObjectId rahter than the spec. The bson.oid
+            ## always is indexed and optimized. Where as a spec may
+            ## not be... it isn't really a ghost assingnment.
+            ## update and other methods rely on this pointin at the
+            ## oid _id not the spec...  We really neeed to refactor
+            ## this stuff and make it sane...
+            self._spec['_id'] = self.oid
         ## make a copy of the dat for history tracking
         self.orig = copy.deepcopy(self.data)
         for ace in self._default__acl__:
