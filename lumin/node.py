@@ -301,8 +301,13 @@ class ContextBySpec(Collection):
                  spec={}):
 
         super(ContextBySpec, self).__init__(request, name)
-        if _id and spec:
-            raise AssertionError("provide either an _id or a spec not both")
+        ## We can't limit to one or the other. Currently resource in
+        ## cam sends both. Saddly this is horribly broken, yet
+        ## works. One Fine day we will refactor this and cam and make
+        ## it make more sense. For now no time. I really hate this no
+        ## time shit.
+        # if _id and spec:
+        #     raise AssertionError("provide either an _id or a spec not both")
         self._spec = spec
         if _id:
             ## If we get an ID use it instad od the multi key spec
