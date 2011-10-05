@@ -2,6 +2,9 @@ import deform
 import re
 import unicodedata
 
+from chameleon.utils import Markup as Structure
+
+
 TS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
@@ -16,10 +19,6 @@ def normalize(title):
     url_safe = unicode(re.sub('[^\w\s-]', '', url_safer).strip().lower())
     return re.sub('[-\s]+', '-', url_safe)
 
-
-class Structure(unicode):
-    def __html__(self):
-        return self
 
 
 ## buttons
