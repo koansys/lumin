@@ -163,8 +163,17 @@ class ContextById(Collection):
                 "Please use lists".format(ace))
         if not '__acl__' in self.data:
             self.data['__acl__'] = [ace]
-        elif ace not in self.__acl__:
-            self.data['__acl__'].append(ace)
+        else:
+            acl = self.data['__acl__']
+            a, p, perms = ace
+
+            for i, (action, principal, permissions) in enumerate(acl):
+                if a == action and p == principal:
+                    permissions = list(sorted(set(permissions) | set(perms)))
+                    acl[i][-1] = permissions
+                    break
+            else:
+                acl.append(ace)
 
     def remove_ace(self, ace):
         if not isinstance(ace, list):

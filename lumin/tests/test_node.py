@@ -192,6 +192,9 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         document = self.request.db['test'].find_one({'_id': 'frobnitz'})
         self.failUnless(document.get('__acl__'), [['a', 'b', 'c']])
 
+        context.add_ace(['a', 'b', 'd'])
+        self.assertEquals(context.__acl__, [['a', 'b', ['c', 'd']]])
+
 
 # class ContextBySpecTestCase(BaseFunctionalTestCase):
 #     def test_unique(self):
