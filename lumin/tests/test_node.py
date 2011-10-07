@@ -195,6 +195,9 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         context.add_ace(['a', 'b', 'd'])
         self.assertEquals(context.__acl__, [['a', 'b', ['c', 'd']]])
 
+        context.remove_ace(['a', 'b', 'c'])
+        self.assertEquals(context.__acl__, [['a', 'b', 'd']])
+
 
 # class ContextBySpecTestCase(BaseFunctionalTestCase):
 #     def test_unique(self):

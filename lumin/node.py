@@ -156,32 +156,76 @@ class ContextById(Collection):
 
     __acl__ = property(get__acl__, set__acl__, delete__acl__)
 
-    def add_ace(self, ace):
+    def _acl_apply(self, ace, mutator):
         if not isinstance(ace, list):
             raise TypeError(
                 "{} is not a list, mongo stores tuples as a list."
                 "Please use lists".format(ace))
-        if not '__acl__' in self.data:
-            self.data['__acl__'] = [ace]
-        else:
-            acl = self.data['__acl__']
-            a, p, perms = ace
 
-            for i, (action, principal, permissions) in enumerate(acl):
-                if a == action and p == principal:
-                    permissions = list(sorted(set(permissions) | set(perms)))
-                    acl[i][-1] = permissions
+        acl = self.__acl__
+
+        if not acl:
+            self.__acl__ = [ace]
+            return
+
+        a, p, perms = ace
+
+        assert not isinstance(perms, tuple)
+        if not isinstance(perms, list):
+            perms = (perms, )
+
+        perms = set(perms)
+
+        for i, (action, principal, permissions) in enumerate(acl):
+            if a == action and p == principal:
+                if not isinstance(permissions, list):
+                    permissions = (permissions, )
+
+                permissions = set(permissions)
+
+                # Note that set arguments are updated in place
+                mutator(permissions, perms)
+
+                # Set updated permissions as a sorted list
+                acl[i][-1] = self._acl_sorted(permissions)
+
+                # Stop when we've applied all permissions
+                if not perms:
                     break
-            else:
-                acl.append(ace)
+        else:
+            if perms:
+                value = self._acl_sorted(perms)
+                acl.append([a, p, value])
+
+        # Filter out trivial entries
+        acl[:] = filter(
+            lambda (a, p, permissions): \
+            permissions if isinstance(permissions, list) else True,
+            acl
+            )
+
+    def _acl_add(self, existing, added):
+        existing |= added
+        added.clear()
+
+    def _acl_remove(self, existing, added):
+        intersection = existing & added
+
+        existing -= intersection
+        added -= intersection
+
+    def _acl_sorted(self, permissions):
+        if len(permissions) == 1:
+            for permission in permissions:
+                return permission
+        else:
+            return list(sorted(permissions))
+
+    def add_ace(self, ace):
+        self._acl_apply(ace, self._acl_add)
 
     def remove_ace(self, ace):
-        if not isinstance(ace, list):
-            raise TypeError(
-                "{} is not a list, mongo stores tuples as a list."
-                "Please use lists".format(ace))
-        if ace in self.__acl__:
-            self.data['__acl__'].remove(ace)
+        self._acl_apply(ace, self._acl_remove)
 
     @property
     def __name__(self):
