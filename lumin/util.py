@@ -2,9 +2,6 @@ import deform
 import re
 import unicodedata
 
-from chameleon.utils import Markup as Structure
-
-
 TS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
