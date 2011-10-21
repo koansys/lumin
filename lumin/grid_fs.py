@@ -72,7 +72,7 @@ class MongoUploadTmpStore(object):
     def preview_url(self, uid):
         gf = self.get(uid)
         if gf and gf.get('mimetype') in self.image_mimetypes:
-            return route_url('preview_image', self.request, uid=uid)
+            return None #return route_url('preview_image', self.request, uid=uid)
         else:
             return None  # route_url('preview_image', self.request, uid=uid)
 
