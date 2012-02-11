@@ -75,11 +75,11 @@ class Login:
             )
 
 
-@view_config(context='pyramid.exceptions.Forbidden',
-             renderer="lumin:templates/login.pt")
-@view_config(route_name='login', renderer="lumin:templates/login.pt")
-def login(context, request):
-    return Login()(request)
+# @view_config(context='pyramid.exceptions.Forbidden',
+#              renderer="lumin:templates/login.pt")
+# @view_config(route_name='login', renderer="lumin:templates/login.pt")
+# def login(context, request):
+#     return Login()(request)
 
 
 class Logout:
@@ -92,12 +92,12 @@ class Logout:
                          headers = headers)
 
 
-@view_config(route_name='logout')
+# @view_config(route_name='logout')
 def logout(context, request):
     request.session.flash('You have been logged out.')
     return Logout()(request)
 
 
-def add_loginout(config):
-    config.add_route('login', '/login')
-    config.add_route('logout', '/logout')
+# def add_loginout(config):
+#     config.add_route('login', '/login')
+#     config.add_route('logout', '/logout')
