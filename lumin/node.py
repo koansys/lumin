@@ -203,6 +203,7 @@ class ContextById(RootFactory):
         if safe and result['err']:
             raise result['err']
 
+
 class ContextBySpec(RootFactory):
     """
     Like ContextById but takes a *spec*ifying dictionary instead.
@@ -225,10 +226,11 @@ class ContextBySpec(RootFactory):
         self.environ = request.environ
         self.spec = spec
         self.unique = unique
-        self.data={}
+        self.data = {}
         self._collection = self.db[self.__collection__]
         self._schema = self.__schema__().bind(request=self.request)
-        self.__acl__.extend(self._default__acl__)
+        self.__acl__.extend([cl for cl in self._default__acl__ \
+            if cl not in self.__acl__])
         if self.spec:
             cursor = self.collection.find(spec)
             if self.unique:
@@ -243,7 +245,7 @@ class ContextBySpec(RootFactory):
                                                   + "matched the spec")
         acl = self.data.get('__acl__', None)
         if acl:
-            self.__acl__.extend(acl)
+            self.__acl__.extend([cl for cl in acl if cl not in self.__acl__])
 
     @property
     def __name__(self):
