@@ -9,12 +9,11 @@ from pyramid.security import remember
 from pyramid.security import forget
 from pyramid.settings import get_settings
 from pyramid.url import route_url
-from pyramid.view import view_config
-
 
 from lumin.util import TS_FORMAT
 
 COLLECTION = 'users'
+
 
 class GroupFinder:
     def __init__(self, collection_name=COLLECTION):
@@ -23,7 +22,7 @@ class GroupFinder:
     def __call__(self, userid, request):
         try:
             user = request.db[self.collection_name].find(
-                {'_id' : userid}).next()
+                {'_id': userid}).next()
         except StopIteration:
             user = None
         if user and not user.get('disabled', None):
@@ -47,7 +46,7 @@ class Login:
             password = request.params['password']
             try:
                 user = request.db[self.collection_name].find(
-                    {'_id' : login}).next()
+                    {'_id': login}).next()
             except StopIteration:
                 user = None
             if user and not user.get('disabled', None):
@@ -57,21 +56,22 @@ class Login:
                     headers = remember(request, login)
 
                     request.db[self.collection_name].update(
-                        {"_id" : user['_id']},
-                        {"$set" : {'last_login' : datetime.utcnow().strftime(TS_FORMAT)}}
+                        {"_id": user['_id']},
+                        {"$set": {'last_login': datetime.utcnow().strftime(TS_FORMAT)}}
                          )
                     return HTTPFound(location=came_from,
                                      headers=headers)
             message = 'Login failed'
 
         return dict(
-            came_from = came_from,
-            logged_in = authenticated_userid(request),
-            login = login,
-            message = message,
-            password = password,
-            title = 'Please log in',
-            action = '/login',
+            action='/login',
+            came_from=came_from,
+            logged_in=authenticated_userid(request),
+            login=login,
+            message=message,
+            password=password,
+            section='login',
+            title='Please log in',
             )
 
 
@@ -89,12 +89,12 @@ class Logout:
     def __call__(self, request):
         headers = forget(request)
         return HTTPFound(location=route_url(self.view_name, request),
-                         headers = headers)
+                         headers=headers)
 
 
 # @view_config(route_name='logout')
 def logout(context, request):
-    request.session.flash('You have been logged out.')
+    request.session.flash('<p>You have been logged out.</p>')
     return Logout()(request)
 
 
