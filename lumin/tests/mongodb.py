@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -65,6 +66,10 @@ class MongoDBPlugin(Plugin):
                 "--noscripting",   # not used
                 "--nounixsocket",   # not used
                 "--noprealloc",
+                "--nojournal",
+                "--smallfiles",
+                "--logpath",
+                self.db_path + "/mongo.log"
                 ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT
@@ -77,7 +82,7 @@ class MongoDBPlugin(Plugin):
         """
         if not self._running:
             return
-
+        shutil.rmtree(self.db_path)
         del os.environ["TEST_MONGODB"]
         if sys.platform == 'darwin':
             self.process.kill()
