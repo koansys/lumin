@@ -1,7 +1,7 @@
 import os  # pragma: no cover
 import time   # pragma: no cover
 
-from pymongo.objectid import ObjectId   # pragma: no cover
+from bson.objectid import ObjectId   # pragma: no cover
 
 from zope.interface import implements  # pragma: no cover
 

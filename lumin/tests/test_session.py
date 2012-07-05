@@ -8,7 +8,7 @@ class LuminSession(unittest.TestCase):
         return LuminSessionFactoryConfig('secret', **kw)(request)
 
     def test_ctor_no_cookie(self):
-        from pymongo.objectid import ObjectId
+        from bson.objectid import ObjectId
         request = testing.DummyRequest()
         request.registry.settings = {}
         request.db = DummyDB()
@@ -40,7 +40,7 @@ class LuminSession(unittest.TestCase):
         self.assertEqual(dict(session), {'_id': 1})
 
     def test_ctor_with_cookie_expired(self):
-        from pymongo.objectid import ObjectId
+        from bson.objectid import ObjectId
         request = testing.DummyRequest()
         request.registry.settings = {}
         request.db = DummyDB()
@@ -50,7 +50,7 @@ class LuminSession(unittest.TestCase):
         self.assertEqual(type(dict(session)['_id']), ObjectId)
 
     def test_ctor_with_bad_cookie(self):
-        from pymongo.objectid import ObjectId
+        from bson.objectid import ObjectId
         request = testing.DummyRequest()
         request.registry.settings = {}
         request.db = DummyDB()
