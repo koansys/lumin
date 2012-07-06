@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import deform
 import re
 import unicodedata
@@ -13,7 +15,7 @@ def normalize(title):
     :term:`_id` or the :term:`__name__` by which we find the resource.
     """
     url_safer = unicodedata.normalize('NFKD', title).encode('ascii', 'ignore')
-    url_safe = unicode(re.sub('[^\w\s-]', '', url_safer).strip().lower())
+    url_safe = re.sub('[^\w\s-]', '', url_safer).strip().lower()
     return re.sub('[-\s]+', '-', url_safe)
 
 

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from lumin.tests.base import BaseFunctionalTestCase
 
 
@@ -41,12 +43,12 @@ class CollectionTestCase(BaseFunctionalTestCase):
         collection = Collection(self.request, 'test')
 
         result = collection.insert(
-            {'_id': 'frobnitz'}, u'Frobnitz')
+            {'_id': 'frobnitz'}, 'Frobnitz')
         self.assertEqual(result, 'frobnitz')
 
         # Insert another, with "increment" enabled
         result = collection.insert(
-            {'_id': 'frobnitz'}, u'Frobnitz', increment=True)
+            {'_id': 'frobnitz'}, 'Frobnitz', increment=True)
         self.assertEqual(result, 'frobnitz-1')
 
 
@@ -57,25 +59,25 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         """
         from lumin.node import ContextById
         self.request.db['test'].insert(
-            {'_id': 'frobnitz', 'title': u'Frobnitz'})
+            {'_id': 'frobnitz', 'title': 'Frobnitz'})
         doc = self.request.db['test'].find_one({'_id': 'frobnitz'})
         context = ContextById(self.request, 'frobnitz', 'test', data=doc)
         self.assertEqual(
-            context.data, {"_id": "frobnitz", "title": "Frobnitz"})
-        context.data["abc"] = 123
+            context.data, {'_id': 'frobnitz', 'title': 'Frobnitz'})
+        context.data['abc'] = 123
         context.save()
         doc = self.request.db['test'].find_one({'_id': 'frobnitz'})
         doc.pop('mtime')
 
         self.assertEqual(
             doc,
-            dict(_id='frobnitz', title=u'Frobnitz', abc=123, changed_by=u""))
+            dict(_id='frobnitz', title='Frobnitz', abc=123, changed_by=''))
 
     def test_context_with_data_sans_document(self):
         """A context without a document raises errors on lifecycle methods.
         """
         from lumin.node import ContextById
-        data = {"_id": "foobar", "title": "hello world"}
+        data = {'_id': 'foobar', 'title': 'hello world'}
         context = ContextById(self.request, 'frobnitz', 'test', data=data)
         self.assertEqual(context.data, data)
         self.assertRaises(KeyError, context.save)
@@ -86,58 +88,58 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         from lumin.node import ContextById
         # Insert item directly into collection
         self.request.db['test'].insert(
-            {'_id': 'frobnitz'}, {'title': u'Frobnitz'}
+            {'_id': 'frobnitz'}, {'title': 'Frobnitz'}
             )
 
         context = ContextById(self.request, 'frobnitz', 'test')
-        context.data.update({'title': u'Frobbozz'})
+        context.data.update({'title': 'Frobbozz'})
         context.save()
         history = context.history()
         self.assertEquals(history.count(), 0)
-        self.assertRaises(StopIteration, history.next)
+        self.assertRaises(StopIteration, history.next) ## PY3: should be history.__next__
         self.assertTrue(context.data['mtime'])
 
     def test_update(self):
         # Insert item directly into collection
         self.request.db['test'].insert(
-            {'_id': 'frobnitz'}, {'title': u'Frobnitz'}
+            {'_id': 'frobnitz'}, {'title': 'Frobnitz'}
             )
 
         from lumin.node import ContextById
         context = ContextById(self.request, 'frobnitz', 'test')
-        result = context.update({'title': u'Frobbozz'})
+        result = context.update({'title': 'Frobbozz'})
         self.assertEqual(result, None)
-        self.assertEqual(context.data['title'], u'Frobbozz')
+        self.assertEqual(context.data['title'], 'Frobbozz')
 
-        data = self.request.db['test'].find({'_id': 'frobnitz'}).next()
+        data = next(self.request.db['test'].find({'_id': 'frobnitz'}))
         self.assertEqual(data['title'], context.data['title'])
         self.assertEqual(data['changed_by'], '')
         self.assertTrue(data['mtime'])
 
     def test_update_history(self):
         # Insert item directly into collection
-        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': ''})
 
         from lumin.node import ContextById
         context = ContextById(self.request, 'frobnitz', 'test')
 
         # Update 1
-        context.update({'title': u'Frobnitz'})
+        context.update({'title': 'Frobnitz'})
 
         # Update 2
-        context.update({'title': u'Frobbozz'})
+        context.update({'title': 'Frobbozz'})
 
         history = context.history()
 
         self.assertEqual(history.count(), 2)
-        obj = history.next()
-        self.assertEqual(obj['title'], u'Frobnitz')
+        obj = next(history)
+        self.assertEqual(obj['title'], 'Frobnitz')
         self.assertNotEqual(obj['mtime'], context.data['mtime'])
-        self.assertEqual(history.next()['title'], u'')
-        self.assertEqual(context.data['title'], u'Frobbozz')
+        self.assertEqual(history.next()['title'], '')
+        self.assertEqual(context.data['title'], 'Frobbozz')
 
     def test_empty_default__acl__(self):
-        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': ''})
 
         from lumin.node import ContextById
 
@@ -157,7 +159,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         self.failIf(document.get('__acl__', None))
 
     def test_with_default__acl__(self):
-        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': ''})
         from lumin.node import ContextById
 
         class AContext(ContextById):
@@ -170,7 +172,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         self.failUnless(document.get('__acl__'), [[1, 2, 3]])
 
     def test_add_and_remove_ace(self):
-        self.request.db['test'].insert({'_id': 'frobnitz', 'title': u''})
+        self.request.db['test'].insert({'_id': 'frobnitz', 'title': ''})
         from lumin.node import ContextById
 
         class AContext(ContextById):
@@ -203,7 +205,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
 #     def test_unique(self):
 #         # Insert item directly into collection
 #         self.request.db['test'].insert(
-#             {'_id': 'frobnitz'}, {'title': u'Frobnitz'}
+#             {'_id': 'frobnitz'}, {'title': 'Frobnitz'}
 #             )
 
 #         from lumin.node import ContextBySpec
@@ -215,7 +217,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
 #     def test_not_unique(self):
 #         # Insert item directly into collection
 #         self.request.db['test'].insert(
-#             {'_id': 'frobnitz'}, {'title': u'Frobnitz'}
+#             {'_id': 'frobnitz'}, {'title': 'Frobnitz'}
 #             )
 
 #         from lumin.node import ContextBySpec

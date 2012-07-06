@@ -37,7 +37,6 @@ requires = [
     'nose',
     'pymongo',
     'pyramid',
-    'python-memcached',
     ]
 
 class doc(Command):
@@ -72,15 +71,15 @@ class doc(Command):
             if status:
                 raise RuntimeError("documentation step '%s' failed" % mode)
 
-            print ""
-            print "Documentation step '%s' performed, results here:" % mode
-            print "   %s/" % path
+            print ("")
+            print (("Documentation step '%s' performed, results here:" % mode))
+            print (("   %s/" % path))
         else:
-            print """
+            print ("""
 `setup.py doc` is not supported for this version of Python.
 
 Please ask in the user forums for help.
-"""
+""")
 
 setup(name='lumin',
       version=__version__,

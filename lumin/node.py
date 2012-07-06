@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import copy
 import datetime
 
@@ -53,7 +55,7 @@ class Collection(Factory):
     def get(self, _id):
         return ContextById(self.request, _id=_id, name=self.collection)
 
-    def insert(self, doc, title_or_id, increment=True, seperator=u'-'):
+    def insert(self, doc, title_or_id, increment=True, seperator='-'):
         """
         Insert ``doc`` into the :term:`collection`.
 
@@ -67,7 +69,7 @@ class Collection(Factory):
         **Default: ``True``**
 
         :param seperator: character to separate ``title_or_id`` incremental id.
-        **Default: ``u"-"``**
+        **Default: ```"-"``**
         """
 
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
@@ -84,7 +86,7 @@ class Collection(Factory):
                     break
                 except DuplicateKeyError:
                     suffix += 1
-                    _id_suffixed = seperator.join([_id, unicode(suffix)])
+                    _id_suffixed = seperator.join([_id, str(suffix)])
                     doc['_id'] = _id_suffixed
         else:
             oid = self._collection.insert(doc, safe=True)
@@ -135,7 +137,7 @@ class ContextById(Collection):
                     raise HTTPInternalServerError(
                         "Duplicate object found for '%s'." % self._id
                         )
-                data = cursor.next()
+                data = next(cursor)
             except StopIteration:
                 raise NotFound(self._id)
 
@@ -198,6 +200,8 @@ class ContextById(Collection):
                 acl.append([a, p, value])
 
         # Filter out trivial entries
+        #acl[:] = [a_p_permissions for a_p_permissions in acl if a_p_permissions[2] if isinstance(a_p_permissions[2], list) else True]
+        ## PY3: ^ 2to3 suggested to replace lambda below
         acl[:] = filter(
             lambda (a, p, permissions): \
             permissions if isinstance(permissions, list) else True,
@@ -378,7 +382,7 @@ class ContextBySpec(Collection):
             )
             try:
                 ## set data to teh document found
-                self.data = cursor.next()
+                self.data = next(cursor)
             except StopIteration:
                 ## or it doesn't exist
                 raise NotFound(repr(self._spec))
@@ -493,7 +497,7 @@ class ContextBySpec(Collection):
                 query).limit(limit).sort('_id', DESCENDING)
         return cursor
 
-    def insert(self, doc, title_or_id, increment=True, seperator=u'-'):
+    def insert(self, doc, title_or_id, increment=True, seperator='-'):
         """
         Insert ``doc`` into the :term:`collection`.
 
@@ -507,7 +511,7 @@ class ContextBySpec(Collection):
         **Default: ``True``**
 
         :param seperator: character to separate ``title_or_id`` incremental id.
-        **Default: ``u"-"``**
+        **Default: ```"-"``**
         """
 
         ctime = mtime = datetime.datetime.utcnow().strftime(TS_FORMAT)
@@ -523,7 +527,7 @@ class ContextBySpec(Collection):
                     break
                 except DuplicateKeyError as e:
                     suffix += 1
-                    __name___suffixed = seperator.join([_id, unicode(suffix)])
+                    __name___suffixed = seperator.join([_id, str(suffix)])
                     doc['__name__'] = __name___suffixed
         else:
             self._collection.insert(doc, safe=True)

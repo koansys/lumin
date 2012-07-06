@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import unittest
 from pyramid import testing
 
@@ -318,21 +320,17 @@ class Test_manage_accessed(unittest.TestCase):
 
 
 def serialize(data, secret):
-    try:
-        from hashlib import sha1
-    except ImportError:  # pragma: no cover
-        import sha as sha1
-
-    try:
-        import cPickle as pickle
-    except ImportError:  # pragma: no cover
-        import pickle
-
+    from pyramid.compat import (
+        pickle,
+        bytes_,
+        native_
+        )
+    from hashlib import sha1
     import hmac
     import base64
     pickled = pickle.dumps('123', pickle.HIGHEST_PROTOCOL)
-    sig = hmac.new(secret, pickled, sha1).hexdigest()
-    return sig + base64.standard_b64encode(pickled)
+    sig = hmac.new(bytes_(secret), pickled, sha1).hexdigest()
+    return sig + native_(base64.b64encode(pickled))
 
 
 class Test_signed_serialize(unittest.TestCase):

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import os  # pragma: no cover
 import time   # pragma: no cover
 

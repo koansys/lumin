@@ -85,11 +85,11 @@ class TestConlanderNullTransformer(unittest.TestCase):
     def test_many_out(self):
         import colander
         from lumin.son import SENTINEL
-        doc = {'five' : {u'_type': u'colander.null'},
-               'four': {'foo': {u'_type': u'colander.null'}},
-               'three': {'foo': {'bar': {'baz': {'spam': {u'_type': u'colander.null'}}}}},
-               'two': {'foo': {u'_type': u'colander.null'}},
-               'one': {'foo': {'bar': {u'_type': u'colander.null'}}}}
+        doc = {'five' : {'_type': 'colander.null'},
+               'four': {'foo': {'_type': 'colander.null'}},
+               'three': {'foo': {'bar': {'baz': {'spam': {'_type': 'colander.null'}}}}},
+               'two': {'foo': {'_type': 'colander.null'}},
+               'one': {'foo': {'bar': {'_type': 'colander.null'}}}}
         tf = self._makeOne()
         result = tf.transform_outgoing(doc, None)
         self.failUnlessEqual(result['one']['foo']['bar'], colander.null)

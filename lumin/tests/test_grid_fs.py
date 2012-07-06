@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from lumin.tests.base import BaseFunctionalTestCase
 
 
@@ -21,7 +23,7 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
         return fs
 
     def _make_fp(self, data='fp'):
-        from cStringIO import StringIO
+        from io import StringIO
         return StringIO(data)
 
     def test_get_miss_explicit_default(self):
@@ -137,7 +139,7 @@ class TestGridFile(BaseFunctionalTestCase):
         return fs
 
     def _make_file(self):
-        from cStringIO import StringIO
+        from io import StringIO
         return StringIO('This is a file')
 
     def test_not_found(self):
