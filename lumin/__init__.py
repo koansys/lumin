@@ -1,5 +1,5 @@
 from .db import register_mongodb
-from .db import register_memcached
+# from .db import register_memcached
 
 def includeme(config):
     """ Function meant to be included via
@@ -9,7 +9,7 @@ def includeme(config):
     config.add_directive('register_mongodb',
                          register_mongodb,
                          action_wrap=True)
-    config.add_directive('register_memcached',
-                         register_memcached,
-                         action_wrap=True)
+    # config.add_directive('register_memcached',
+    #                      register_memcached,
+    #                      action_wrap=True)
     config.scan('lumin')

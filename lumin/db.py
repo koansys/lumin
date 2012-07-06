@@ -35,22 +35,22 @@ def register_mongodb(config, db_uri, slave_okay=False):
 
 
 ### XXX DO I really want memcached
-class IMemcachedClient(Interface):
-    pass
+#class IMemcachedClient(Interface):
+#    pass
 
 
-def get_memcached():
-    reg = get_current_registry()
-    return reg.queryUtility(IMemcachedClient)
+#def get_memcached():
+#    reg = get_current_registry()
+#    return reg.queryUtility(IMemcachedClient)
 
-@subscriber(INewRequest)
-def add_memcached(event):
-    mc = get_memcached()
-    if mc:
-        event.request.mc = mc
+#@subscriber(INewRequest)
+#def add_memcached(event):
+#    mc = get_memcached()
+#    if mc:
+#        event.request.mc = mc
 
-def register_memcached(config, mc_host):
-    import memcache
+#def register_memcached(config, mc_host):
+#    import memcache
 
-    mc_conn = memcache.Client([mc_host])
-    config.registry.registerUtility(mc_conn, IMemcachedClient)
+#    mc_conn = memcache.Client([mc_host])
+#    config.registry.registerUtility(mc_conn, IMemcachedClient)
