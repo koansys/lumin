@@ -1,16 +1,22 @@
 from __future__ import unicode_literals
 
-import os  # pragma: no cover
-import time   # pragma: no cover
+import binascii
+import os
+import time
 
-from bson.objectid import ObjectId   # pragma: no cover
+from bson.objectid import ObjectId
 
-from zope.interface import implements  # pragma: no cover
+from zope.interface import implementer
 
-from pyramid.interfaces import ISession  # pragma: no cover
-from pyramid.session import manage_accessed  # pragma: no cover
-from pyramid.session import signed_deserialize  # pragma: no cover
-from pyramid.session import signed_serialize  # pragma: no cover
+from pyramid.compat import (
+    PY3,
+    text_,
+    )
+
+from pyramid.interfaces import ISession
+from pyramid.session import manage_accessed
+from pyramid.session import signed_deserialize
+from pyramid.session import signed_serialize
 
 
 def LuminSessionFactoryConfig(
@@ -60,9 +66,8 @@ def LuminSessionFactoryConfig(
     ``lumin.session.collection`` key/value to the configuration .ini
     """
 
+    @implementer(ISession)
     class LuminSessionFactory(dict):
-
-        implements(ISession)
 
         # configuration parameters
         _cookie_name = cookie_name
@@ -136,15 +141,17 @@ def LuminSessionFactoryConfig(
         get = manage_accessed(dict.get)
         __getitem__ = manage_accessed(dict.__getitem__)
         items = manage_accessed(dict.items)
-        iteritems = manage_accessed(dict.iteritems)
         values = manage_accessed(dict.values)
-        itervalues = manage_accessed(dict.itervalues)
         keys = manage_accessed(dict.keys)
-        iterkeys = manage_accessed(dict.iterkeys)
         __contains__ = manage_accessed(dict.__contains__)
-        has_key = manage_accessed(dict.has_key)
         __len__ = manage_accessed(dict.__len__)
         __iter__ = manage_accessed(dict.__iter__)
+
+        if not PY3:
+            has_key = manage_accessed(dict.has_key)
+            iteritems = manage_accessed(dict.iteritems)
+            iterkeys = manage_accessed(dict.iterkeys)
+            itervalues = manage_accessed(dict.itervalues)
 
         # modifying dictionary methods
         clear = manage_accessed(dict.clear)
@@ -175,7 +182,7 @@ def LuminSessionFactoryConfig(
         # CSRF API methods
         @manage_accessed
         def new_csrf_token(self):
-            token = os.urandom(20).encode('hex')
+            token = text_(binascii.hexlify(os.urandom(20)))
             self['_csrft_'] = token
             return token
 
