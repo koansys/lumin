@@ -203,8 +203,8 @@ class ContextById(Collection):
         #acl[:] = [a_p_permissions for a_p_permissions in acl if a_p_permissions[2] if isinstance(a_p_permissions[2], list) else True]
         ## PY3: ^ 2to3 suggested to replace lambda below
         acl[:] = filter(
-            lambda (a, p, permissions): \
-            permissions if isinstance(permissions, list) else True,
+            lambda ace: \
+            ace[2] if isinstance(ace[2], list) else True,
             acl
             )
 
