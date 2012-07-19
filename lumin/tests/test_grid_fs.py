@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from pyramid.compat import bytes_
+
 from lumin.tests.base import BaseFunctionalTestCase
 
 
@@ -23,8 +25,8 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
         return fs
 
     def _make_fp(self, data='fp'):
-        from io import StringIO
-        return StringIO(data)
+        from io import BytesIO
+        return BytesIO(bytes_(data))
 
     def test_get_miss_explicit_default(self):
         inst = self.make_one()
@@ -51,7 +53,7 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
         inst = self.make_one(gridfs=fs)
         result = inst.get('theuid', default)
         self.failUnless('abc' in inst.fs.list())
-        self.assertEqual(result['fp'].read(), 'fp')
+        self.assertEqual(result['fp'].read(), b'fp')
 
     def test___getitem__miss(self):
         inst = self.make_one()
@@ -139,8 +141,8 @@ class TestGridFile(BaseFunctionalTestCase):
         return fs
 
     def _make_file(self):
-        from io import StringIO
-        return StringIO('This is a file')
+        from io import BytesIO
+        return BytesIO(b'This is a file')
 
     def test_not_found(self):
         from pyramid.httpexceptions import HTTPNotFound
@@ -161,7 +163,7 @@ class TestGridFile(BaseFunctionalTestCase):
         result = self.make_one(request=self.request)
         self.assertEqual(result.gf.filename, 'aname.txt')
         self.assertEqual(result.gf.metadata, self.metadata)
-        self.assertEqual(result.gf.read(), 'This is a file')
+        self.assertEqual(result.gf.read(), b'This is a file')
 
     def test_response(self):
         from pyramid.response import Response
