@@ -96,7 +96,7 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         context.save()
         history = context.history()
         self.assertEquals(history.count(), 0)
-        self.assertRaises(StopIteration, history.next) ## PY3: should be history.__next__
+        self.assertRaises(StopIteration, next, history)
         self.assertTrue(context.data['mtime'])
 
     def test_update(self):
@@ -135,7 +135,8 @@ class ContextByIdTestCase(BaseFunctionalTestCase):
         obj = next(history)
         self.assertEqual(obj['title'], 'Frobnitz')
         self.assertNotEqual(obj['mtime'], context.data['mtime'])
-        self.assertEqual(history.next()['title'], '')
+        #import pdb; pdb.set_trace()
+        self.assertEqual(next(history)['title'], '')
         self.assertEqual(context.data['title'], 'Frobbozz')
 
     def test_empty_default__acl__(self):
