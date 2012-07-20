@@ -3,7 +3,7 @@ import unittest
 import pyramid.testing
 
 
-class ConfigurationTest(unittest.TestCase):
+class TestConfiguration(unittest.TestCase):
     def setUp(self):
         self.config = pyramid.testing.setUp()
 
@@ -36,3 +36,17 @@ class ConfigurationTest(unittest.TestCase):
 #        self.config.register_memcached('127.0.0.1:11211')
 #        client = self.config.registry.queryUtility(IMemcachedClient)
 #        self.assertTrue(client is not None)
+
+
+class TestIncludeMe(unittest.TestCase):
+    def setUp(self):
+        self.config = pyramid.testing.setUp()
+
+    def tearDown(self):
+        pyramid.testing.tearDown()
+
+    def test_includeme(self):
+        import lumin
+        self.assertFalse(hasattr(self.config, 'register_mongodb'))
+        lumin.includeme(self.config)
+        self.assertTrue(hasattr(self.config, 'register_mongodb'))

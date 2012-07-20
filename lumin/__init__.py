@@ -1,5 +1,5 @@
-from .db import register_mongodb
 # from .db import register_memcached
+from lumin.db import register_mongodb
 
 def includeme(config):
     """ Function meant to be included via

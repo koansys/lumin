@@ -10,7 +10,7 @@ from pyramid.threadlocal import get_current_registry
 from lumin.son import ColanderNullTransformer
 
 
-class IMongoDBConnection(Interface):
+class IMongoDBConnection(Interface):  # pragma: nocover
     pass
 
 
