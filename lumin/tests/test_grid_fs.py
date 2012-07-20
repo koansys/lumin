@@ -110,7 +110,7 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
                    'uid': 'uid'}
         inst['uid'] = cstruct
         self.assertEqual(inst.preview_url('uid'),
-                         None) #'http://example.com/preview_image/uid')
+                         None)  # 'http://example.com/preview_image/uid')
 
     def test_preview_url_not_image(self):
         self.config.begin(request=self.request)
@@ -128,9 +128,9 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
 
 class TestGridFile(BaseFunctionalTestCase):
 
-    metadata={'uploaded_by': 'testuser',
-              'mimetype': 'text/plain',
-              '__acl__': ['Allow', 'system.Everyone', 'view']}
+    metadata = {'uploaded_by': 'testuser',
+                'mimetype': 'text/plain',
+                '__acl__': ['Allow', 'system.Everyone', 'view']}
 
     def make_one(self, request=None):
         from lumin.grid_fs import GridFile
