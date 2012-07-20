@@ -17,8 +17,7 @@ class TestDB(unittest.TestCase):
         ## shouldn't be able to connect to example.com
         self.assertRaises(pymongo.errors.AutoReconnect,
             lumin.db.register_mongodb,
-            self.config, os.environ.get(
-                "THERE IS NO MONGODB CONNECTION STRING HERE")
+            self.config, "localhost:65536"
             )
         conn = lumin.db.register_mongodb(
             self.config,
