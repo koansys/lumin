@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.7"
+  - "3.2"
+env:
+  - TEST_MONGODB=localhost
+install:
+  - pip install -e .
+before_script:
+script: nosetests  --nologcapture --nocapture --with-coverage --cover-package=lumin --cover-erase --exclude=selenium
+notifications:
+  irc: "irc.freenode.org#koansys"
