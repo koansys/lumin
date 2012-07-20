@@ -7,6 +7,7 @@ from gridfs import GridFS
 from gridfs.errors import NoFile
 from bson.errors import InvalidId
 
+from pyramid.compat import text_
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.security import Allow
@@ -103,8 +104,8 @@ class GridFile:
         return Response(
             body=self.gf.read(),
             content_disposition='attachment; filename={}'.format(
-                self.gf.filename.encode('utf8')),
-            content_type=self.gf.content_type.encode('utf8') if \
+                text_(self.gf.filename, encoding='utf8')),
+            content_type=text_(self.gf.content_type, encoding='utf8') if \
                 self.gf.content_type else 'binary/octet-stream',
             content_length=self.gf.length
             )

@@ -4,6 +4,8 @@ import deform
 import re
 import unicodedata
 
+from pyramid.compat import native_
+
 TS_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
@@ -15,9 +17,8 @@ def normalize(title):
     :term:`_id` or the :term:`__name__` by which we find the resource.
     """
     url_safer = unicodedata.normalize('NFKD', title).encode('ascii', 'ignore')
-    url_safe = re.sub('[^\w\s-]', '', url_safer).strip().lower()
+    url_safe = re.sub('[^\w\s-]', '', native_(url_safer, encoding="utf8")).strip().lower()
     return re.sub('[-\s]+', '-', url_safe)
-
 
 
 ## buttons

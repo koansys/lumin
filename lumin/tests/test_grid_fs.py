@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 
-from pyramid.compat import bytes_
+from pyramid.compat import (
+    bytes_,
+    text_
+    )
 
 from lumin.tests.base import BaseFunctionalTestCase
 
@@ -169,9 +172,9 @@ class TestGridFile(BaseFunctionalTestCase):
         from pyramid.response import Response
         fs = self._make_fs()
         fp = self._make_file()
-        oid = fs.put(fp, content_type='text/plain',
+        oid = fs.put(fp, content_type=text_('text/plain'),
                      filename='aname.txt',
-                     metadata=self.metadata)
+                     xmetadata=self.metadata)
         self.request.matchdict = {'slug': str(oid)}
         result = self.make_one(request=self.request)
         resp = result.response()
@@ -180,5 +183,5 @@ class TestGridFile(BaseFunctionalTestCase):
         self.assertEqual(resp.content_type, result.gf.content_type)
         self.assertEqual(resp.content_disposition,
                          'attachment; filename=aname.txt')
-        self.assertEqual(resp.body, 'This is a file')
+        self.assertEqual(resp.body, b'This is a file')
         self.assertEqual(resp.status, '200 OK')
