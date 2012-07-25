@@ -26,5 +26,9 @@ exclude_lines =
 
 ignore_errors = True
 
+## seem to be missed if not on cmd line
+show-missing = True
+omit = *env*,*/tests/*,setup.py
+
 [html]
 directory = coverage_html_report

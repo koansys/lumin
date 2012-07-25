@@ -28,7 +28,7 @@ else
     PID=`cat $DBDIR/mongod.pid`
     echo "mongod started with pid: $PID"
     echo "starting tests"
-    TEST_MONGODB=localhost:$PORT ./$1/bin/coverage run setup.py test && ./$1/bin/coverage report --omit=*env*,*/tests/*,setup.py
+    TEST_MONGODB=localhost:$PORT ./$1/bin/coverage run setup.py test && ./$1/bin/coverage report -m --omit=*env*,*/tests/*,setup.py
     echo "killing mongod at: $PID"
     kill -9 $PID
     echo "removing $DBDIR"
