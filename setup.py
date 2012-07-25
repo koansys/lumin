@@ -105,7 +105,7 @@ setup(name='lumin',
       zip_safe=False,
       tests_require = requires,
       install_requires = requires,
-      test_suite="nose.collector",
+      #test_suite="nose.collector",
       cmdclass = {'doc' : doc },
       entry_points = """\
         [nose.plugins.0.10]
