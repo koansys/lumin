@@ -98,6 +98,21 @@ class TestMongoUploadTmpStore(BaseFunctionalTestCase):
         self.failUnless(one['uploadDate'])
         self.failUnless(cstruct['filename'] in inst.fs.list())
 
+    def test___delitem__(self):
+        fp = self._make_fp()
+        cstruct = {'fp': fp,
+                   'mimetype': 'mimetype',
+                   'filename': 'filename',
+                   'uid': 'uid'}
+        inst = self.make_one()
+        inst['uid'] = cstruct
+        one = self.request.db.tempstore.files.find_one({'uid': 'uid'})
+        self.assertEqual(one['mimetype'], 'mimetype')
+        self.failUnless(cstruct['filename'] in inst.fs.list())
+        del inst['uid']
+        self.failIf(cstruct['filename'] in inst.fs.list())
+        self.assertEqual(self.request.db.tempstore.files.find_one({'uid': 'uid'}), None)
+
     def test_preview_url(self):
         self.config.begin(request=self.request)
         self.config.add_route('preview_image', '/preview_image/:uid')
@@ -174,9 +189,10 @@ class TestGridFile(BaseFunctionalTestCase):
         fp = self._make_file()
         oid = fs.put(fp, content_type=text_('text/plain'),
                      filename='aname.txt',
-                     xmetadata=self.metadata)
+                     metadata=self.metadata)
         self.request.matchdict = {'slug': str(oid)}
         result = self.make_one(request=self.request)
+        self.assertEqual(result.__acl__, self.metadata['__acl__'])
         resp = result.response()
         self.assertTrue(isinstance(resp, Response))
         self.assertEqual(resp.content_length, result.gf.length)
@@ -185,3 +201,22 @@ class TestGridFile(BaseFunctionalTestCase):
                          'attachment; filename=aname.txt')
         self.assertEqual(resp.body, b'This is a file')
         self.assertEqual(resp.status, '200 OK')
+
+    def test_default__acl(self):
+        from pyramid.security import Allow
+        metadata = {'uploaded_by': 'testuser',
+                    'mimetype': 'text/plain'}
+        fs = self._make_fs()
+        fp = self._make_file()
+        oid = fs.put(fp,
+                    content_type='text/plain',
+                    filename='aname.txt',
+                    metadata=metadata)
+        self.request.matchdict = {'slug': str(oid)}
+        result = self.make_one(request=self.request)
+        self.assertEqual(result.__acl__,
+            [(Allow, 'group:managers', ('add', 'delete', 'edit', 'view'))])
+        self.assertEqual(result.gf.filename, 'aname.txt')
+        self.assertEqual(result.gf.metadata, metadata)
+        self.assertEqual(result.gf.read(), b'This is a file')
+

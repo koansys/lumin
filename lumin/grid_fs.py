@@ -31,7 +31,7 @@ class MongoUploadTmpStore(object):
         ## TODO: remove when mongo gets TTL capped collections.
         expired = self.tempstore.files.find(
             {'uploadDate': {"$lt": datetime.utcnow() - self.max_age}})
-        for file_ in expired:
+        for file_ in expired:  # pragma: no cover
             self.fs.delete(file_['_id'])
 
     def get(self, uid, default=None):
@@ -40,7 +40,9 @@ class MongoUploadTmpStore(object):
             return default
         oid = result['_id']
         fp = self.fs.get(oid)
-        if fp is None:
+        if fp is None:  # pragma: no cover
+            ## this shouldn't be able to happen. unless the file  is removed in
+            ## TTL collection after the metadata is retreived
             return default
         result['fp'] = fp
         return result
