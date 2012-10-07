@@ -106,7 +106,7 @@ class GridFile:
             body=self.gf.read(),
             content_disposition='attachment; filename={}'.format(
                 text_(self.gf.filename, encoding='utf8')),
-            content_type=text_(self.gf.content_type, encoding='utf8') if \
+            content_type="{}".format(text_(self.gf.content_type, encoding='utf8')) if \
                 self.gf.content_type else 'binary/octet-stream',
             content_length=self.gf.length
             )
