@@ -33,7 +33,6 @@ class ColanderNullTransformer(SONManipulator):
         for (k, v) in son.items():
             if v is colander.null:
                 son[k] = SENTINEL
-                continue
             if isinstance(v, dict):
                 self._recursive_in(v)
         return son
@@ -44,10 +43,10 @@ class ColanderNullTransformer(SONManipulator):
         serialized sentinel value to ``colander.null``.
         """
         for (k, v) in son.items():
-            if isinstance(v, dict):
+            if isinstance(v, dict):  # pragma: no branch
                 if v != SENTINEL:
                     self._recursive_out(v)
-                elif v == SENTINEL:
+                elif v == SENTINEL:  # pragma: no branch
                     son[k] = colander.null
         return son
 
@@ -58,7 +57,6 @@ class ColanderNullTransformer(SONManipulator):
         for (k, v) in subson.items():
             if v is colander.null:
                 subson[k] = SENTINEL
-                continue
             if isinstance(v, dict):
                 for (key, value) in v.items():
                     if value is colander.null:
@@ -94,14 +92,29 @@ class DecimalTransformer(SONManipulator):
     """
     def transform_incoming(self, son, collection):
         """
-        sets any DecimalTransformer to a serializable value.
+        sets any Decimal to a serializable value.
         """
         for (k, v) in son.items():
             if isinstance(v, Decimal):
-                son[k] = {'_type': 'decimal', 'value': v}
-            elif isinstance(v, dict):
-                son[k] = self.transform_incoming(v, collection)
+                son[k] = {'_type': 'decimal', 'value': str(v)}
+            if isinstance(v, dict):
+                self._recursive_in(v)
         return son
+
+    def _recursive_in(self, subson):
+            """
+            called by transform_incoming to provide recursive transformation
+            """
+            for (k, v) in subson.items():
+                if isinstance(v, Decimal):
+                    subson[k] = {'_type': 'decimal', 'value': str(v)}
+                if isinstance(v, dict):
+                    for (key, value) in v.items():
+                        if isinstance(value, Decimal):
+                            v[key] = {'_type': 'decimal',
+                                        'value': str(value)}
+                        if isinstance(value, dict):
+                            self._recursive_in(value)
 
     def transform_outgoing(self, son, collection):
         """
@@ -109,12 +122,27 @@ class DecimalTransformer(SONManipulator):
         not recursive.
         """
         for (k, v) in son.items():
-            if isinstance(v, dict):
+            if isinstance(v, dict):  # pragma: no branch
                 if "_type" in v and v["_type"] == "decimal":
                     son[k] = Decimal(v['value'])
-                else:
-                    son[k] = self.transform_outgoing(v, collection)
+                if isinstance(v, dict):  # pragma: no branch
+                    self._recursive_out(v)
         return son
+
+    def _recursive_out(self, subson):
+        """
+        called by transform_outgoing to provide recursive transformation
+        """
+        for (k, v) in subson.items():
+            if isinstance(v, dict):
+                if "_type" in v and v["_type"] == "decimal":
+                        subson[k] = Decimal(v['value'])
+                else:
+                    for (key, value) in v.items():
+                        if "_type" in value and value["_type"] == "decimal":
+                            value[key] = Decimal(value['value'])
+                        if isinstance(value, dict):  # pragma: no branch
+                            self._recursive_out(v)
 
 
 class DeNull:
@@ -137,7 +165,6 @@ class DeNull:
         for (k, v) in son.items():
             if v is colander.null:
                 son[k] = ''
-                continue
             if isinstance(v, dict):
                 self._recurse(v)
         return son
@@ -146,7 +173,6 @@ class DeNull:
         for (k, v) in subson.items():
             if v is colander.null:
                 subson[k] = ''
-                continue
             if isinstance(v, dict):
                 for (key, value) in v.items():
                     if value is colander.null:
@@ -179,8 +205,7 @@ class DeSentinel:
         for (k, v) in son.items():
             if v is SENTINEL:
                 son[k] = ''
-                continue
-            if isinstance(v, dict):
+            if isinstance(v, dict):  # pragma: no branch
                 self._recurse(v)
         return son
 
@@ -188,7 +213,6 @@ class DeSentinel:
         for (k, v) in subson.items():
             if v is SENTINEL:
                 subson[k] = ''
-                continue
             if isinstance(v, dict):
                 for (key, value) in v.items():
                     if value is SENTINEL:

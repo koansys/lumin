@@ -1,4 +1,4 @@
-import os
+# import os
 import unittest
 import pyramid.testing
 
@@ -10,32 +10,47 @@ class TestConfiguration(unittest.TestCase):
     def tearDown(self):
         pyramid.testing.tearDown()
 
-    def test_register_mongodb_directive(self):
+    def _includelumin(self):
         import lumin
         self.config.include(lumin)
+
+    def _registerdb(self):
+        self.config.registry.settings['db_name'] = 'frozznob'
+        self.config.register_mongodb('mongodb://localhost')
+
+    def test_register_mongodb_directive(self):
+        self._includelumin()
 
         from lumin.db import IMongoDBConnection
         connection = self.config.registry.queryUtility(IMongoDBConnection)
         self.assertTrue(connection is None)
 
         # Now, let's register a database connection
-        self.config.register_mongodb(
-                        'mongodb://%s' % os.environ['TEST_MONGODB'])
+        self._registerdb()
         connection = self.config.registry.queryUtility(IMongoDBConnection)
         self.assertTrue(connection is not None)
 
-#    def test_register_memcached_directive(self):
-#        import lumin
-#        self.config.include(lumin)
+    def test_get_mongodb(self):
+        self._includelumin()
+        self._registerdb()
 
-#        from lumin.db import IMemcachedClient
-#        client = self.config.registry.queryUtility(IMemcachedClient)
-#        self.assertTrue(client is None)
+        from lumin.db import get_mongodb
+        from pymongo.database import Database
 
-#       # Now, let's register a memcached client
-#        self.config.register_memcached('127.0.0.1:11211')
-#        client = self.config.registry.queryUtility(IMemcachedClient)
-#        self.assertTrue(client is not None)
+        conn = get_mongodb(self.config.registry)
+        self.assertTrue(isinstance(conn, Database))
+
+    def test_add_mongodb(self):
+        self._includelumin()
+        self._registerdb()
+        import pyramid
+        request = pyramid.testing.DummyRequest(
+            path='/',
+            )
+        import pyramid
+        # fire an event to call add_mongodb
+        self.config.registry.handle(pyramid.events.NewRequest(request))
+        self.assertTrue(hasattr(request, 'db'))
 
 
 class TestIncludeMe(unittest.TestCase):

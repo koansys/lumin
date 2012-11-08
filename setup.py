@@ -28,16 +28,18 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
-__version__ = '0.2.0'
+__version__ = '0.5.0'
 
 requires = [
     'colander',
     'coverage',
     'deform',
+    'mock',
     'nose',
     'pymongo',
     'pyramid',
     ]
+
 
 class doc(Command):
     description = "generate or test documentation"
@@ -84,7 +86,7 @@ Please ask in the user forums for help.
 setup(name='lumin',
       version=__version__,
       description='A library to aid in using MongoDB with repoze.bfg',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Topic :: Database",
         "Development Status :: 4 - Beta",
@@ -103,13 +105,13 @@ setup(name='lumin',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      tests_require = requires,
-      install_requires = requires,
+      tests_require=requires,
+      install_requires=requires,
       test_suite="nose.collector",
-      cmdclass = {'doc' : doc },
-      entry_points = """\
-        [nose.plugins.0.10]
-        mongodb = lumin.tests.mongodb:MongoDBPlugin
-      """
+      cmdclass={'doc': doc},
+      # entry_points="""\
+      #   [nose.plugins.0.10]
+      #   #mongodb = lumin.tests.mongodb:MongoDBPlugin
+      # """
       )
 

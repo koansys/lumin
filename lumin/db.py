@@ -5,7 +5,6 @@ from zope.interface import Interface
 
 from pyramid.events import subscriber
 from pyramid.interfaces import INewRequest
-from pyramid.threadlocal import get_current_registry
 
 from lumin.son import ColanderNullTransformer
 
@@ -32,25 +31,3 @@ def register_mongodb(config, db_uri, slave_okay=False):
     conn = pymongo.Connection(db_uri, slave_okay=slave_okay)
     config.registry.registerUtility(conn, IMongoDBConnection)
     return conn
-
-
-### XXX DO I really want memcached
-#class IMemcachedClient(Interface):
-#    pass
-
-
-#def get_memcached():
-#    reg = get_current_registry()
-#    return reg.queryUtility(IMemcachedClient)
-
-#@subscriber(INewRequest)
-#def add_memcached(event):
-#    mc = get_memcached()
-#    if mc:
-#        event.request.mc = mc
-
-#def register_memcached(config, mc_host):
-#    import memcache
-
-#    mc_conn = memcache.Client([mc_host])
-#    config.registry.registerUtility(mc_conn, IMemcachedClient)
