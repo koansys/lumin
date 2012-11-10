@@ -19,12 +19,14 @@ class MongoUploadTmpStore(object):
     def __init__(self,
                  request,
                  gridfs=None,
+                 tempstore=None,
                  image_mimetypes=('image/jpeg', 'image/png', 'image/gif'),
                  max_age=3600):
         self.request = request
         self.fs = gridfs if gridfs else GridFS(request.db,
                                                collection=self.__collection__)
-        self.tempstore = request.db[self.__collection__]
+        self.tempstore = tempstore if tempstore else \
+            request.db[self.__collection__]
         self.max_age = timedelta(seconds=max_age)
         self.image_mimetypes = image_mimetypes
         ## XXX: Total hackery

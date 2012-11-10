@@ -32,13 +32,17 @@ __version__ = '0.5.0'
 
 requires = [
     'colander',
-    'coverage',
     'deform',
-    'mock',
-    'nose',
     'pymongo',
     'pyramid',
     ]
+
+tests_require = [
+    'coverage',
+    'mock',
+    'mongomock',
+    'nose',
+]
 
 
 class doc(Command):
@@ -105,8 +109,8 @@ setup(name='lumin',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      tests_require=requires,
-      install_requires=requires,
+      tests_require=requires+tests_require,
+      install_requires=requires+tests_require,
       test_suite="nose.collector",
       cmdclass={'doc': doc},
       # entry_points="""\
