@@ -23,17 +23,19 @@ class MongoUploadTmpStore(object):
                  image_mimetypes=('image/jpeg', 'image/png', 'image/gif'),
                  max_age=3600):
         self.request = request
-        self.fs = gridfs if gridfs else GridFS(request.db,
-                                               collection=self.__collection__)
+        self.fs = gridfs if gridfs else GridFS(
+            request.db,
+            collection=self.__collection__)
         self.tempstore = tempstore if tempstore else \
             request.db[self.__collection__]
         self.max_age = timedelta(seconds=max_age)
         self.image_mimetypes = image_mimetypes
         ## XXX: Total hackery
-        ## TODO: remove when mongo gets TTL capped collections.
+        ## TODO: create a cron-able script prolly in js callable from
+        ## TODO: mongo binary
         expired = self.tempstore.files.find(
             {'uploadDate': {"$lt": datetime.utcnow() - self.max_age}})
-        for file_ in expired:
+        for file_ in expired:  # pragma: no cover
             self.fs.delete(file_['_id'])
 
     def get(self, uid, default=None):
@@ -42,8 +44,8 @@ class MongoUploadTmpStore(object):
             return default
         oid = result['_id']
         fp = self.fs.get(oid)
-        if fp is None:
-            return default
+        if fp is None:  # I don't think this can happen
+            return default  # pragma: no cover
         result['fp'] = fp
         return result
 
@@ -81,7 +83,18 @@ class MongoUploadTmpStore(object):
 
 class GridFile:
     """
-    GirdFile Factory
+    GridFile Factory - It can be used like so...
+
+    .. code-block:: python
+
+        @view_config(route_name='files')
+        def grid_files(request):
+            return request.context.response()
+
+
+        def add_gridfs_routes(config):
+            config.add_route('files',  '/files/{slug}')
+
     """
     _default__acl__ = [
         (Allow, 'group:managers', ('add', 'delete', 'edit', 'view')),
@@ -102,6 +115,13 @@ class GridFile:
         return self.gf.metadata.get('__acl__', self._default__acl__)
 
     def response(self):
+        """
+        XXX: TODO: This could probably use some love to be less memory hungry.
+        sendfile or something. IIRC WSGI responses can't start until the
+        body is complete, so using a generator still reads all of body
+        into ram before sending response. I think sendfile is the way to
+        go unless someone has a better idea.
+        """
         return Response(
             body=self.gf.read(),
             content_disposition='attachment; filename={}'.format(
@@ -113,11 +133,5 @@ class GridFile:
 
 
 
-#@view_config(route_name='files')
-# def grid_files(request):
-#     return request.context.response()
 
-
-#def add_gridfs_routes(config):
-#    config.add_route('files',  '/files/{slug}')
 
