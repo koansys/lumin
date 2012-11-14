@@ -141,18 +141,6 @@ class TestMongoUploadTmpStore(BaseTestCase):
         self.assertEqual(inst.preview_url('uid'),
                          None)  # 'http://example.com/preview_image/uid')
 
-    def test___delitem__(self):
-        fp = self._make_fp()
-        cstruct = {'fp': fp,
-                   'mimetype': 'mimetype',
-                   'filename': 'filename',
-                   'uid': 'uid'}
-        inst = self.make_one()
-        inst['uid'] = cstruct
-        self.failUnless(cstruct['filename'] in inst.fs.list())
-        del inst[cstruct['uid']]
-        self.failIf(cstruct['filename'] in inst.fs.list())
-
     def test_preview_url_not_image(self):
         self.config.begin(request=self.request)
         self.config.add_route('preview_image', '/preview_image/:uid')
@@ -164,8 +152,6 @@ class TestMongoUploadTmpStore(BaseTestCase):
                    'uid': 'uid'}
         inst['uid'] = cstruct
         self.assertEqual(inst.preview_url('uid'), None)
-
-
 
 
 class TestGridFile(BaseTestCase):
@@ -212,31 +198,20 @@ class TestGridFile(BaseTestCase):
         self.assertEqual(result.gf.metadata, self.metadata)
         self.assertEqual(result.gf.read(), b'This is a file')
 
-    def test__acl__explicit(self):
-        fs = self._make_fs()
-        fp = self._make_file()
-        oid = fs.put(fp, content_type='text/plain',
-                     filename='aname.txt',
-                     metadata=self.metadata)
-        self.request.matchdict = {'slug': str(oid)}
-        result = self.make_one(request=self.request)
-        self.assertEqual(result.__acl__,
-            self.metadata['__acl__'])
-
-    def test_response(self):
-        from pyramid.response import Response
-        fs = self._make_fs()
-        fp = self._make_file()
-        oid = fs.put(fp, content_type=text_('text/plain'),
-                     filename='aname.txt',
-                     xmetadata=self.metadata)
-        self.request.matchdict = {'slug': str(oid)}
-        result = self.make_one(request=self.request)
-        resp = result.response()
-        self.assertTrue(isinstance(resp, Response))
-        self.assertEqual(resp.content_length, result.gf.length)
-        self.assertEqual(resp.content_type, result.gf.content_type)
-        self.assertEqual(resp.content_disposition,
-                         'attachment; filename=aname.txt')
-        self.assertEqual(resp.body, b'This is a file')
-        self.assertEqual(resp.status, '200 OK')
+# #     def test_response(self):
+# #         from pyramid.response import Response
+# #         fs = self._make_fs()
+# #         fp = self._make_file()
+# #         oid = fs.put(fp, content_type=text_('text/plain'),
+# #                      filename='aname.txt',
+# #                      xmetadata=self.metadata)
+# #         self.request.matchdict = {'slug': str(oid)}
+# #         result = self.make_one(request=self.request)
+# #         resp = result.response()
+# #         self.assertTrue(isinstance(resp, Response))
+# #         self.assertEqual(resp.content_length, result.gf.length)
+# #         self.assertEqual(resp.content_type, result.gf.content_type)
+# #         self.assertEqual(resp.content_disposition,
+# #                          'attachment; filename=aname.txt')
+# #         self.assertEqual(resp.body, b'This is a file')
+# #         self.assertEqual(resp.status, '200 OK')
