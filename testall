@@ -1,1 +1,3 @@
-../../bin/nosetests --nologcapture --nocapture --mongodb-bin=../../bin/mongod --mongodb-port=43000 $*
+./env/bin/nosetests lumin lumin/tests/functional --with-coverage --cover-erase --cover-package=lumin --cover-erase -v --exclude=ZASIDE*
+
+# ../../bin/nosetests --nologcapture --nocapture --mongodb-bin=../../bin/mongod --mongodb-port=43000 $*
