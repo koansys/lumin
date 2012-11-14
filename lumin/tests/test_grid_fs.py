@@ -2,13 +2,8 @@ from __future__ import unicode_literals
 
 import unittest
 
-from mock import (
-    Mock,
-    MagicMock
-    )
 import mongomock
 
-import pymongo
 
 from pyramid.compat import (
     bytes_,
