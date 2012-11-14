@@ -24,10 +24,18 @@ def get_mongodb(registry):
 def add_mongodb(event):
     db = get_mongodb(event.request.registry)
     event.request.db = db
-    event.request.fs = GridFS(db)
+    try:
+        event.request.fs = GridFS(db)
+    except TypeError:
+        ## TODO: need to find a better way
+        ## NB: using mock db so we use a mock gfs
+        ## not sure if we can add a mock gfs to the
+        ## firing event in
+        from lumin.testing import MockGridFS
+        event.request.fs = MockGridFS(event.request.db)
 
 
-def register_mongodb(config, db_uri, slave_okay=False):
-    conn = pymongo.Connection(db_uri, slave_okay=slave_okay)
+def register_mongodb(config, db_uri, slave_okay=False, conn=None):
+    conn = conn if conn else pymongo.Connection(db_uri, slave_okay=slave_okay)
     config.registry.registerUtility(conn, IMongoDBConnection)
     return conn
