@@ -11,6 +11,15 @@ class MockGridOut(dict):
     def __init__(self, obj):
         self.update(obj)
 
+    def __getattr__(self, name):
+        if name in self:
+            return self[name]
+        raise AttributeError(
+            "MockGridOut has no attribute '{}'".format(name))
+
+    def read(self):
+        return self['data'].read()
+
 
 class MockGridFS:
     def __init__(self, db, collection='files'):
@@ -27,10 +36,9 @@ class MockGridFS:
 
     def get(self, oid):
         result = doc = self.storage.get(oid, None)
-
         if doc:
-            result = doc['data']
-        return MockGridOut(result)
+            result = MockGridOut(doc)
+        return result
 
     def list(self):
         return [v['filename'] for (k, v) in self.storage.items()]
