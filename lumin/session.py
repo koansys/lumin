@@ -147,7 +147,7 @@ def LuminSessionFactoryConfig(
         __len__ = manage_accessed(dict.__len__)
         __iter__ = manage_accessed(dict.__iter__)
 
-        if not PY3:
+        if not PY3:  # pragma: py2
             has_key = manage_accessed(dict.has_key)
             iteritems = manage_accessed(dict.iteritems)
             iterkeys = manage_accessed(dict.iterkeys)

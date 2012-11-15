@@ -24,6 +24,9 @@ exclude_lines =
     if 0:
     if __name__ == .__main__.:
 
+    # Don't report py2 as uncovered with py3
+    pragma: py2
+
 ignore_errors = True
 
 [html]
