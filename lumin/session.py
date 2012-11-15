@@ -18,6 +18,9 @@ from pyramid.session import manage_accessed
 from pyramid.session import signed_deserialize
 from pyramid.session import signed_serialize
 
+## ripped and modified from
+## pyramid.session.UnencryptedCookieSessionFactoryConfig
+
 
 def LuminSessionFactoryConfig(
     secret,
