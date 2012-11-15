@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from lumin.tests.base import BaseFunctionalTestCase
+from lumin.testing.base import BaseFunctionalTestCase
 
 
 class CollectionTestCase(BaseFunctionalTestCase):
