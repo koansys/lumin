@@ -1,9 +1,8 @@
-# import os
 import unittest
 
-import mongomock
-
 import pyramid.testing
+
+from lumin.testing import Connection
 
 
 class TestConfiguration(unittest.TestCase):
@@ -69,36 +68,3 @@ class TestIncludeMe(unittest.TestCase):
         self.assertFalse(hasattr(self.config, 'register_mongodb'))
         lumin.includeme(self.config)
         self.assertTrue(hasattr(self.config, 'register_mongodb'))
-
-
-class Database(mongomock.Database):
-    def __init__(self, conn):
-        super(Database, self).__init__(conn)
-
-    def __getitem__(self, db_name):
-        db = self._collections.get(db_name, None)
-        if db is None:
-            db = self._collections[db_name] = Collection(self)
-        return db
-
-    def __getattr__(self, attr):
-        return self[attr]
-
-
-class Connection(mongomock.Connection):
-    def __init__(self):
-        super(Connection, self).__init__()
-
-    def __getitem__(self, db_name):
-        db = self._databases.get(db_name, None)
-        if db is None:
-            db = self._databases[db_name] = Database(self)
-        return db
-
-    def __getattr__(self, attr):
-        return self[attr]
-
-
-class Collection(mongomock.Collection):
-    def __call__(self, *args, **kwargs):
-        pass
