@@ -112,7 +112,9 @@ def LuminSessionFactoryConfig(
                 new = False
                 state = self.db[self.collection].find_one({'_id': oid})
                 if now - accessed > self._timeout:
-                    if state:
+                    if state:  # pragma: no branch
+                        ## if someone deleted the collection
+                        ## there would be no state.
                         self.invalidate({'_id': state['_id']})
                     state = self._new_session()
 
