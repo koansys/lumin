@@ -28,7 +28,7 @@ class TestTestUtil(unittest.TestCase):
 
     def test_normalize_remove_specialChar(self):
         result = self.make_one("a ?/>[)^Ś%$#@ z")
-        self.assertTrue(result == "a-z")
+        self.assertEquals(result, "a-s-z")
 
 
 class MongoUploadTmpStore(unittest.TestCase):
