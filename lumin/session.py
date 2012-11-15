@@ -111,8 +111,6 @@ def LuminSessionFactoryConfig(
                 accessed, created, oid = value
                 new = False
                 state = self.db[self.collection].find_one({'_id': oid})
-                if not state:  # pragma: no cover
-                    state = self._new_session()
                 if now - accessed > self._timeout:
                     if state:
                         self.invalidate({'_id': state['_id']})
