@@ -10,16 +10,16 @@ class TestTestUtil(unittest.TestCase):
         return normalize(title)
 
     def test_normalize_lowercases(self):
-        result = self.make_one("ABCDE") #testing for lowercase failing
+        result = self.make_one("ABCDE")
         self.assertTrue(result.islower())
         self.failUnless(result == "abcde")
 
     def test_normalize_spaces(self):
-        result = self.make_one("hj vQ") # testing for spaces in the URI
+        result = self.make_one("hj vQ")
         self.assertTrue(result == "hj-vq")
 
     def test_normalize_multiple_spaces(self):
-        result = self.make_one("ab  CD  ef") #testing for multiple spaces
+        result = self.make_one("ab  CD  ef")
         self.assertTrue(result == "ab-cd-ef")
 
     def test_normalize_remove_unicode(self):
