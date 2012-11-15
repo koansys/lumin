@@ -1,1 +1,7 @@
+echo "####################################################"
+echo "####################################################"
 ./env/bin/nosetests lumin --with-coverage --cover-erase --cover-package=lumin --cover-erase --exclude=ZASIDE*
+echo "####################################################"
+./env3/bin/nosetests lumin --with-coverage --cover-erase --cover-package=lumin --cover-erase --exclude=ZASIDE*
+echo "####################################################"
+echo "####################################################"
