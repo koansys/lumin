@@ -55,6 +55,7 @@ class MockGridFS:
         self.storage[_id] = doc
         return _id
 
+
 class Database(mongomock.Database):
     def __init__(self, conn):
         super(Database, self).__init__(conn)
