@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+
+
 COLLECTION = 'users'
 
 
@@ -19,7 +22,7 @@ class GroupFinder:
             except (AttributeError, KeyError):
                 return groups
 
-            if roles:
+            if roles:  # pragma: no branch
                 principals = set(groups)
                 principals.add(user['_id'])
                 check = principals.__contains__
