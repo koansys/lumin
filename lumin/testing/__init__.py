@@ -87,3 +87,11 @@ class Connection(mongomock.Connection):
 class Collection(mongomock.Collection):
     def __call__(self, *args, **kwargs):
         pass
+
+
+class DummySchemaNode(object):
+    typ = None
+
+    def __init__(self, name='form', *children):
+        self.name = name
+        self.children = list(children)
