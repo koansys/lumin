@@ -39,5 +39,8 @@ class TestUsernameValidator(unittest.TestCase):
         return func(node, value)
 
     def test_username_too_short(self):
-        result = self._call_fut('aname')
-        self.assertEquals(result, '')
+        from colander import Invalid
+        self.assertRaises(
+            Invalid,
+            self._call_fut, 'aname'
+            )
