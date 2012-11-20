@@ -56,6 +56,10 @@ class TestCollection(unittest.TestCase):
         from lumin.node import Collection
         return Collection(request=request, name=name)
 
+    def _create_collection_by_id(self, _id=0, name="test_name"):
+        from lumin.node import ContextById
+        return ContextById(request=self.request, _id=_id, name=name)
+
     def test_ctor_default(self):
         result = self._call_fut(request=self.request)
         self.assertEquals(result.__name__, None)
@@ -68,7 +72,38 @@ class TestCollection(unittest.TestCase):
         self.assertEquals(result._collection.count(), 0)
         self.assertEquals(result._collection_history.count(), 0)
 
-    # def test__name__property(self):
+    def test_collection_find(self):
+        result = self._call_fut(request=self.request)
+        self.assertEquals(result.find().count(), 0)
+
+    def test_collection_get(self):
+        data = self._create_collection_by_id()
+
+        result = self._call_fut(request=self.request)
+        self.assertEquals(result.get(_id=0).__name__, data.__name__)
+
+    # TODO - Need to work out MongoMock's handeling of safe...
+    # def test_collection_insert(self):
+    #     result = self._call_fut(request=self.request)
+    #     result.insert({u'name': u'Foo'}, u'first user')
+    #     self.assertEquals(result._collection.count(), 1)
+
+    # TODO - Need to work out MongoMock's handeling of safe...
+    # def test_collection_insert_duplicate_key(self):
+    #     result = self._call_fut(request=self.request)
+    #     result.insert({u'name': u'Foo'}, u'first user')
+    #     result.insert({u'name': u'Bar'}, u'first user')
+    #     self.assertRaises(AssertionError)
+
+    # TODO - Need to work out MongoMock's handeling of safe...
+    # def test_collection_delete(self):
+    #     result = self._call_fut(request=self.request)
+    #     result.insert({u'name': u'Foo'}, u'first user')
+    #     result.delete(_id=u'first-user')
+    #     self.assertEquals(result._collection.count(), 0)
+
+    def test_collection_save(self):  # TODO
+        pass
 
 
 class TestContextById(unittest.TestCase):
