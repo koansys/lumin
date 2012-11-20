@@ -18,7 +18,7 @@ class TestFactory(unittest.TestCase):
         from lumin.node import Factory
         return Factory(request=request)
 
-    def test_factory_setup(self):
+    def test_ctor_default(self):
         result = self._call_fut(request=self.request)
         self.assertEquals(result, result)
 
@@ -56,14 +56,61 @@ class TestCollection(unittest.TestCase):
         from lumin.node import Collection
         return Collection(request=request, name=name)
 
-    def test_collection_setup_no_name(self):
+    def test_ctor_default(self):
         result = self._call_fut(request=self.request)
         self.assertEquals(result.__name__, None)
         self.assertEquals(result._collection.count(), 0)
         self.assertEquals(result._collection_history.count(), 0)
 
-    def test_collection_setup_with_name(self):
-        result = self._call_fut(request=self.request, name="Test_Name")
-        self.assertEquals(result.__name__, "Test_Name")
+    def test_ctor_with_name(self):
+        result = self._call_fut(request=self.request, name="test_name")
+        self.assertEquals(result.__name__, "test_name")
         self.assertEquals(result._collection.count(), 0)
         self.assertEquals(result._collection_history.count(), 0)
+
+    # def test__name__property(self):
+
+
+class TestContextById(unittest.TestCase):
+    def setUp(self):
+        self.config = pyramid.testing.setUp()
+        self.request = pyramid.testing.DummyRequest()
+
+        self.mock_conn = mongomock.Connection()
+        self.request.db = mongomock.Database(self.mock_conn)
+
+    def tearDown(self):
+        pyramid.testing.tearDown()
+
+    def _call_fut(self, request=None, _id=None, name=None, data=None):
+        from lumin.node import ContextById
+        return ContextById(request=request, _id=_id, name=name, data=data)
+
+    def test_ctor_default(self):
+        result = self._call_fut(request=self.request)
+        self.assertEquals(result.__name__, None)
+        self.assertEquals(result._id, None)
+        self.assertEquals(result._spec, {'_id': None})
+        self.assertEquals(result.data, {})
+
+
+class TestContextBySpec(unittest.TestCase):
+    def setUp(self):
+        self.config = pyramid.testing.setUp()
+        self.request = pyramid.testing.DummyRequest()
+
+        self.mock_conn = mongomock.Connection()
+        self.request.db = mongomock.Database(self.mock_conn)
+
+    def tearDown(self):
+        pyramid.testing.tearDown()
+
+    def _call_fut(self, request=None, _id=None, name=None, data=None):
+        from lumin.node import ContextBySpec
+        return ContextBySpec(request=request, _id=_id, name=name, data=data)
+
+    def test_ctor_default(self):
+        result = self._call_fut(request=self.request)
+        self.assertEquals(result.__name__, None)
+        self.assertEquals(result._spec, {'_id': None})
+        self.assertEquals(result.data, {})
