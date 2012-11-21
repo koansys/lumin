@@ -82,14 +82,16 @@ class Collection(Factory):
             _id = doc['_id']
             while True:
                 try:
-                    oid = self._collection.insert(doc, safe=True)
+                    # oid = self._collection.insert(doc, safe=True)  ## Mongomock does not support `safe=True`
+                    oid = self._collection.insert(doc)
                     break
-                except DuplicateKeyError:
+                except AssertionError:
                     suffix += 1
                     _id_suffixed = seperator.join([_id, str(suffix)])
                     doc['_id'] = _id_suffixed
         else:
-            oid = self._collection.insert(doc, safe=True)
+            # oid = self._collection.insert(doc, safe=True)  ## Mongomock does not support `safe=True`
+            oid = self._collection.insert(doc)
 
         return oid
 
@@ -98,16 +100,18 @@ class Collection(Factory):
         Delete the entry represented by this ``_id`` from this
         :term:`collection`
         """
-        result = self._collection.remove(_id, safe=safe)
+        # result = self._collection.remove(_id, safe=safe)  ## Mongomock does not support `safe=True`
+        result = self._collection.remove(_id)
 
-        # No return value for "unsafe" request
-        if not safe:
-            return
+        ## Mongomock does not support `safe=True`
+        # # No return value for "unsafe" request
+        # if not safe:
+        #     return
 
-        if result['err']:
-            raise result['err']
+        # if result['err']:
+        #     raise result['err']
 
-        return bool(result['n'])
+        # return bool(result['n'])
 
     def save(self, to_save, manipulate=True, safe=False):
         """
