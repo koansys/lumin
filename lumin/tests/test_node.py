@@ -163,6 +163,14 @@ class TestContextById(unittest.TestCase):
 
     def test_delete__acl__(self):
         result = self._call_fut(request=self.request)
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        test_acl = [
+              [Allow, Everyone, 'view'],
+              ]
+        result.set__acl__(test_acl)
+        self.assertEquals(result.__acl__, test_acl)
+        result.delete__acl__()
         self.assertEquals(result.__acl__, [])
 
     def test__acl__is_not_list(self):
@@ -176,19 +184,98 @@ class TestContextById(unittest.TestCase):
     #     self._call_fut(request=self.request, _id='test')
     #     self.assertRaises(HTTPInternalServerError, self._call_fut, request=self.request, _id='test')
 
-    # # This destroys many tests above since it puts test_acl onto ContextById permentally.
-    # def test_default__acl__set_to__acl__(self):
-    #     from lumin.node import ContextById
-    #     from pyramid.security import Allow
-    #     from pyramid.security import Everyone
+    # This destroys many tests above since it puts test_acl onto ContextById permentally.
+    def test_default__acl__set_to__acl__(self):
+        from lumin.node import ContextById
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        test_acl = [
+              [Allow, Everyone, 'view'],
+              ]
+        ContextById._default__acl__ = test_acl
+        result = self._call_fut(request=self.request)
+        self.assertEquals(result.__acl__, test_acl)
+        ContextById._default__acl__ = []
 
-    #     test_acl = [
-    #           [Allow, Everyone, 'view'],
-    #           ]
-    #     ContextById._default__acl__ = test_acl
-    #     result = self._call_fut(request=self.request)
-    #     self.assertEquals(result.__acl__, test_acl)
-    #     self.tearDown()
+    def test_ace_allocation(self):
+        result = self._call_fut(request=self.request)
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        test_ace = [Allow, Everyone, 'view']
+        mutator = []
+        result._acl_apply(test_ace, mutator=mutator)
+        pass  # Not sure how to go forward with this test...
+
+    def test_add_ace(self):
+        result = self._call_fut(request=self.request)
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        ace = [Allow, Everyone, 'view']
+        result.add_ace(ace)
+        ace1 = [Allow, Everyone, 'edit']
+        result.add_ace(ace1)
+        expected = [['Allow', 'system.Everyone', ['edit', 'view']]]
+        self.assertEqual(result.__acl__, expected)
+
+    def test_single_permission_through__acl_sorted(self):
+        result = self._call_fut(request=self.request)
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        ace = [Allow, Everyone, 'view']
+        single_permission = result._acl_sorted([ace[2]])
+        self.assertEqual(single_permission, ace[2])
+
+    def test_remove_ace(self):
+        result = self._call_fut(request=self.request)
+        from pyramid.security import Allow
+        from pyramid.security import Everyone
+        ace = [Allow, Everyone, 'edit']
+        result.add_ace(ace)
+        self.assertEqual(result.__acl__, result._default__acl__ + [ace])
+        result.remove_ace(ace)
+        self.assertEqual(result.__acl__, [])
+
+    # # TODO - Figure out how to mock HTTP for line 146 in node.py
+    # def test_oid(self):
+    #     test_id = "test_id"
+    #     result = self._call_fut(request=self.request, _id=test_id)
+    #     self.assertEqual(result.oid, test_id)
+
+    def test_history(self):
+        result = self._call_fut(request=self.request)
+        standard_cursor = mongomock.Cursor('dataset')
+        self.assertEqual(type(result.history()), type(standard_cursor))
+
+    def test_history_limit_as_not_Int(self):
+        result = self._call_fut(request=self.request)
+        self.assertRaises(TypeError, result.history(), limit="string")
+
+    def test_history_with_timestamp(self):
+        from datetime import datetime
+        now = datetime.now()
+        result = self._call_fut(request=self.request)
+        standard_cursor = mongomock.Cursor('dataset')
+        self.assertEqual(type(result.history(since=now)), type(standard_cursor))
+
+    def test_before_history_with_timestamp(self):
+        from datetime import datetime
+        now = datetime.now()
+        result = self._call_fut(request=self.request)
+        standard_cursor = mongomock.Cursor('dataset')
+        self.assertEqual(type(result.history(after=False, since=now)), type(standard_cursor))
+
+    def test_history_with_fields(self):
+        result = self._call_fut(request=self.request)
+        standard_cursor = mongomock.Cursor('dataset')
+        fields = ['test', 'fields']
+        self.assertEqual(type(result.history(fields=fields)), type(standard_cursor))
+
+    # # TODO - Figure out how to mock HTTP for line 146 in node.py
+    # def test_remove(self):
+    #     result = self._call_fut(request=self.request, _id="test_id")
+    #     result.remove()
+    #     self.assertTrue(result.data['deleted'])
+
 
 
 # # TODO - Figure out how to mock HTTP for line 388 in node.py
