@@ -82,16 +82,14 @@ class Collection(Factory):
             _id = doc['_id']
             while True:
                 try:
-                    # oid = self._collection.insert(doc, safe=True)  ## Mongomock does not support `safe=True`
-                    oid = self._collection.insert(doc)
+                    oid = self._collection.insert(doc, safe=True)
                     break
-                except AssertionError:
+                except DuplicateKeyError:
                     suffix += 1
                     _id_suffixed = seperator.join([_id, str(suffix)])
                     doc['_id'] = _id_suffixed
         else:
-            # oid = self._collection.insert(doc, safe=True)  ## Mongomock does not support `safe=True`
-            oid = self._collection.insert(doc)
+            oid = self._collection.insert(doc, safe=True)
 
         return oid
 

@@ -111,7 +111,7 @@ class TestCollection(unittest.TestCase):
     def test_collection_insert_duplicate_key_increment_false(self):
         result = self._call_fut(request=self.request)
         result.insert({u'name': u'Foo'}, u'first user', increment=False)
-        self.assertRaises(AssertionError, result.insert, {u'name': u'Bar'}, u'first user', increment=False)
+        self.assertRaises(DuplicateKeyError, result.insert, {u'name': u'Bar'}, u'first user', increment=False)
 
     # TODO - Need to work out MongoMock's handeling of safe...
     def test_collection_delete(self):
