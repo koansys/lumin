@@ -4,9 +4,8 @@ import unittest
 import mongomock
 
 # Mongomock barfs on inserting keys differently than Pymongo. Expecting `DuplicateKeyError` not `AssertionError`
-# from pymongo.errors import DuplicateKeyError
+from mongomock import DuplicateKeyError
 
-from webob.exc import HTTPInternalServerError
 
 import pyramid.testing
 
