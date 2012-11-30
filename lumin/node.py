@@ -33,17 +33,20 @@ class Factory(object):
 
 
 class Collection(Factory):
-    """Represents a collection context."""
+    """Represents a collection context.
+    :param duplicate_key_error: For testing purposes.
+    """
 
     # Database collection name
     collection = None
 
-    def __init__(self, request, name=None):
+    def __init__(self, request, name=None, duplicate_key_error=DuplicateKeyError):
         super(Collection, self).__init__(request)
 
         name = self.collection = name if name is not None else self.collection
         self._collection = request.db[name]
         self._collection_history = request.db['%s.history' % name]
+        self.duplicate_key_error = duplicate_key_error
 
     @property
     def __name__(self):
@@ -84,7 +87,7 @@ class Collection(Factory):
                 try:
                     oid = self._collection.insert(doc, safe=True)
                     break
-                except DuplicateKeyError:
+                except self.duplicate_key_error:
                     suffix += 1
                     _id_suffixed = seperator.join([_id, str(suffix)])
                     doc['_id'] = _id_suffixed
@@ -355,9 +358,10 @@ class ContextBySpec(Collection):
     def __init__(self,
                  request,
                  _id=None,
-                 name=None, ## NB: collection name
+                 name=None,  # NB: collection name
                  data=None,
-                 spec={}):
+                 spec={},
+                 duplicate_key_error=DuplicateKeyError):
 
         super(ContextBySpec, self).__init__(request, name)
         ## We can't limit to one or the other. Currently resource in
@@ -527,7 +531,7 @@ class ContextBySpec(Collection):
                 try:
                     self._collection.insert(doc, safe=True)
                     break
-                except DuplicateKeyError as e:
+                except self.duplicate_key_error as e:
                     suffix += 1
                     __name___suffixed = seperator.join([_id, str(suffix)])
                     doc['__name__'] = __name___suffixed
