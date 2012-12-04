@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import binascii
+from datetime import datetime
 import os
 import time
 
@@ -17,6 +18,8 @@ from pyramid.interfaces import ISession
 from pyramid.session import manage_accessed
 from pyramid.session import signed_deserialize
 from pyramid.session import signed_serialize
+
+datetime_now = datetime.now
 
 ## ripped and modified from
 ## pyramid.session.UnencryptedCookieSessionFactoryConfig
@@ -92,7 +95,17 @@ def LuminSessionFactoryConfig(
                 "lumin.session.collection",
                 "lumin.sessions")
             self.db = self.request.db
-
+            ## These should be run manually in an entry point or by a
+            ## sysadm so they don't get called on a fresh db wiht 10000
+            ## sessions
+            # self.db[self.collection].ensure_index(
+            #     "atime",
+            #     expireAfterSeconds=self._timeout
+            #     )
+            # self.db[self.collection].ensure_index(
+            #     "ctime",
+            #     expireAfterSeconds=self._cookie_max_age
+            #     )
             now = time.time()
             created = accessed = now
             new = True
@@ -111,11 +124,15 @@ def LuminSessionFactoryConfig(
                 accessed, created, oid = value
                 new = False
                 state = self.db[self.collection].find_one({'_id': oid})
-                if now - accessed > self._timeout:
-                    if state:  # pragma: no branch
-                        ## if someone deleted the collection
-                        ## there would be no state.
+                if state:
+                    if now - accessed > self._timeout:
+                        ## Belt and braces check for expired cookie,
+                        ## but this should occur in a TTL collection in
+                        ## which case there **should** be
+                        ## no state
                         self.invalidate({'_id': state['_id']})
+                        state = self._new_session()
+                else:
                     state = self._new_session()
 
             self.created = created
@@ -124,7 +141,15 @@ def LuminSessionFactoryConfig(
             dict.__init__(self, state)
 
         def _new_session(self):
-            return {'_id': ObjectId()}
+            if self._cookie_max_age:
+                ctime = atime = datetime_now()
+            else:
+                atime, ctime = datetime_now(), None
+            return {
+                '_id': ObjectId(),
+                "ctime": ctime,
+                "atime": atime
+                }
 
         # ISession methods
         def changed(self):
