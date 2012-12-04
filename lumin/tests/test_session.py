@@ -16,7 +16,7 @@ class LuminSession(unittest.TestCase):
         request.db = DummyDB()
         session = self._makeOne(request)
         self.assertEqual(type(dict(session)['_id']), ObjectId)
-        self.assertEqual(len(dict(session)), 1)
+        self.assertEqual(len(dict(session)), 3)
 
     def test_instance_conforms(self):
         from zope.interface.verify import verifyObject
