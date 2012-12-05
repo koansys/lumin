@@ -110,7 +110,7 @@ def LuminSessionFactoryConfig(
             created = accessed = now
             new = True
             value = None
-            state = self._new_session()
+            state = {}  # self._new_session()
             cookieval = request.cookies.get(self._cookie_name)
 
             if cookieval is not None:
@@ -138,7 +138,7 @@ def LuminSessionFactoryConfig(
             self.created = created
             self.accessed = accessed
             self.new = new
-            dict.__init__(self, state)
+            dict.__init__(self, state if state else self._new_session())
 
         def _new_session(self):
             if self._cookie_max_age:
@@ -157,7 +157,7 @@ def LuminSessionFactoryConfig(
 
         def invalidate(self, spec=None):
             if not spec:
-                spec = {'_id': self['_id']}
+                spec = {'_id': self.get('_id', None)}
             self.db[self.collection].remove(spec)
             self.clear()
             # XXX probably needs to unset cookie
@@ -230,7 +230,7 @@ def LuminSessionFactoryConfig(
 
             self.save()
             cookieval = signed_serialize(
-                (self.accessed, self.created, self['_id']), self._secret
+                (self.accessed, self.created, self.get('_id', None)), self._secret
                 )
             response.set_cookie(
                 self._cookie_name,
