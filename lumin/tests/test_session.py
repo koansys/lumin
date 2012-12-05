@@ -15,8 +15,10 @@ class LuminSession(unittest.TestCase):
         request.registry.settings = {}
         request.db = DummyDB()
         session = self._makeOne(request)
-        self.assertEqual(type(dict(session)['_id']), ObjectId)
+        self.assertEqual(type(dict(session).get('_id', None)), ObjectId)
         self.assertEqual(len(dict(session)), 3)
+        self.assertTrue(all([x in dict(session) for x in \
+            ("_id", "atime", "ctime")]))
 
     def test_instance_conforms(self):
         from zope.interface.verify import verifyObject
@@ -41,6 +43,19 @@ class LuminSession(unittest.TestCase):
         session = self._makeOne(request)
         self.assertEqual(dict(session), {'_id': 1})
 
+    def test_ctor_with_cookie_no_state(self):
+        import time
+        from bson.objectid import ObjectId
+        request = testing.DummyRequest()
+        request.registry.settings = {}
+        request.db = DummyDB()
+        cookieval = self._serialize(time.time(), None)
+        request.cookies['lumin_session'] = cookieval
+        session = self._makeOne(request)
+        self.assertTrue(all([x in dict(session) for x in \
+            ("_id", "atime", "ctime")]))
+        self.assertEqual(type(dict(session)['_id']), ObjectId)
+
     def test_ctor_with_cookie_expired(self):
         from bson.objectid import ObjectId
         request = testing.DummyRequest()
@@ -52,15 +67,24 @@ class LuminSession(unittest.TestCase):
         self.assertEqual(type(dict(session)['_id']), ObjectId)
 
     def test_ctor_with_bad_cookie(self):
-        from bson.objectid import ObjectId
         request = testing.DummyRequest()
         request.registry.settings = {}
         request.db = DummyDB()
         cookieval = 'abc'
         request.cookies['lumin_session'] = cookieval
         session = self._makeOne(request)
-        self.assertEqual(type(dict(session)['_id']), ObjectId)
-        self.assertEqual(len(dict(session)), 1)
+        self.assertEqual(type(dict(session)), dict)
+        self.assertEqual(len(dict(session)), 3)
+
+    def test__cookie_with_max_age(self):
+        from bson.objectid import ObjectId
+        request = testing.DummyRequest()
+        request.registry.settings = {}
+        request.db = DummyDB()
+        session = self._makeOne(request,
+            cookie_max_age=86)
+        self.assertEqual(type(dict(session).get("_id")), ObjectId)
+        self.assertEqual(session._cookie_max_age, 86)
 
     def test_not_changed(self):
         request = testing.DummyRequest()
@@ -131,18 +155,20 @@ class LuminSession(unittest.TestCase):
                                 cookie_domain='localhost',
                                 cookie_secure=True,
                                 cookie_httponly=True,
+                                cookie_max_age=86400
                                 )
         session['abc'] = 'x'
         response = Response()
         self.assertEqual(session._set_cookie(response), True)
         cookieval = response.headerlist[-1][1]
-        val, domain, path, secure, httponly = [x.strip() for x in
+        val, domain, maxage, path, expires, secure, httponly = [x.strip() for x in
                                                cookieval.split(';')]
         self.assertTrue(val.startswith('abc='))
         self.assertEqual(domain, 'Domain=localhost')
         self.assertEqual(path, 'Path=/foo')
         self.assertEqual(secure, 'secure')
         self.assertEqual(httponly, 'HttpOnly')
+        self.assertEqual(maxage, 'Max-Age=86400')
 
     def test_flash_default(self):
         request = testing.DummyRequest()
@@ -405,13 +431,13 @@ class DummyCollection(object):
         self.find_result = find_result
 
     def find_one(self, spec):
-        return spec
+        return spec if spec.get("_id", None) else None
 
     def remove(self, spec):
         return spec['_id']
 
     def save(self, spec):
-        return spec['_id']
+        return spec.get('_id', None)
 
 
 class Database(dict):
