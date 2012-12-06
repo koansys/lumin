@@ -34,3 +34,16 @@ class GroupFinder:
             return groups
 
 groupfinder = GroupFinder()
+
+
+class BootstrapAuthenticationPolicy(object):
+    def __init__(self, policy, *principals):
+        self.policy = policy
+        self.principals = list(principals)
+
+    def __getattr__(self, name):
+        return getattr(self.policy, name)
+
+    def effective_principals(self, request):
+        principals = self.policy.effective_principals(request)
+        return list(principals) + self.principals
