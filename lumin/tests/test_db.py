@@ -18,8 +18,8 @@ class TestConfiguration(unittest.TestCase):
 
     def _registerdb(self):
         conn = Connection()
-        self.config.registry.settings['db_name'] = 'frozznob'
-        self.config.register_mongodb('mongodb://localhost', conn=conn)
+        self.config.registry.settings['mongodb.db_name'] = 'frozznob'
+        self.config.register_mongodb(conn=conn)
 
     def test_register_mongodb_directive(self):
         self._includelumin()
@@ -36,10 +36,8 @@ class TestConfiguration(unittest.TestCase):
     def test_get_mongodb(self):
         self._includelumin()
         self._registerdb()
-
         from lumin.db import get_mongodb
-        from mongomock import Database
-
+        from pymongo.database import Database
         conn = get_mongodb(self.config.registry)
         self.assertTrue(isinstance(conn, Database))
 
