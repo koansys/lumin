@@ -68,3 +68,21 @@ class TestGroupFinder(unittest.TestCase):
         self.assertEqual(result, set(['agroup', 'brole']))
 
 
+class TestBootstrapAuthenticationPolicy(unittest.TestCase):
+    def _make_one(self, *principals, **kwargs):
+        from pyramid.authentication import AuthTktAuthenticationPolicy
+        from lumin.security import BootstrapAuthenticationPolicy
+        authpolicy = AuthTktAuthenticationPolicy('asecret', **kwargs)
+        return BootstrapAuthenticationPolicy(authpolicy, *principals)
+
+    def test_it(self):
+        request = pyramid.testing.DummyRequest()
+        inst = self._make_one("one", "two")
+        self.assertEquals(inst.effective_principals(request),
+            ["system.Everyone", "one", "two"])
+
+    def test_attr(self):
+        def dummy():
+            pass
+        inst = self._make_one("one", "two", callback=dummy)
+        self.assertEquals(inst.callback, dummy)
