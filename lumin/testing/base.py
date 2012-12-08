@@ -16,7 +16,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
             request=self.request,
             settings={
                 'secret': 'secret',
-                'db_name': 'test',
+                'mongodb.db_name': 'test',
                 })
 
         self.config.include('lumin')
