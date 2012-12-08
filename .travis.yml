@@ -6,7 +6,7 @@ python:
 env:
   - TEST_MONGODB=localhost
 install:
-  - pip install -e .
+  - python setup.py install
 before_script:
 script: nosetests lumin --with-coverage --cover-erase --cover-package=lumin --cover-erase
 notifications:
