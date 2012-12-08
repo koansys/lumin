@@ -31,7 +31,7 @@ def add_mongodb(event):
         ## TODO: need to find a better way
         ## NB: using mock db so we use a mock gfs
         ## not sure if we can add a mock gfs to the
-        ## firing event in
+        ## firing event in the test that requires it.
         from lumin.testing import MockGridFS
         event.request.fs = MockGridFS(event.request.db)
 
