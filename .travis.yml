@@ -11,3 +11,4 @@ before_script:
 script: nosetests lumin lumin/tests/functional --with-coverage --cover-erase --cover-package=lumin --cover-erase
 notifications:
   irc: "irc.freenode.org#koansys"
+services: mongodb
