@@ -29,7 +29,7 @@ class TestFactory(unittest.TestCase):
 
     def test_acl(self):
         result = self._call_fut(request=self.request)
-        acl = [['Allow', 'system.Everyone', u'view']]
+        acl = [['Allow', 'system.Everyone', 'view']]
         self.assertEquals(result.__acl__, acl)
 
     def test_factory_name(self):
@@ -84,25 +84,25 @@ class TestCollection(unittest.TestCase):
 
     def test_collection_insert(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user')
+        result.insert({'name': 'Foo'}, 'first user')
         self.assertEquals(result._collection.count(), 1)
 
     def test_collection_insert_duplicate_key(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user')
-        result.insert({u'name': u'Foo'}, u'first user')
+        result.insert({'name': 'Foo'}, 'first user')
+        result.insert({'name': 'Foo'}, 'first user')
         self.assertEquals(result._collection.count(), 2)
-        self.assertNotEquals(result._collection.find({"_id": u'first-user1'}), None)
+        self.assertNotEquals(result._collection.find({"_id": 'first-user1'}), None)
 
     def test_collection_insert_duplicate_key_increment_false(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user', increment=False)
-        self.assertRaises(AssertionError, result.insert, {u'name': u'Bar'}, u'first user', increment=False)
+        result.insert({'name': 'Foo'}, 'first user', increment=False)
+        self.assertRaises(AssertionError, result.insert, {'name': 'Bar'}, 'first user', increment=False)
 
     def test_collection_delete(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user')
-        result.delete(_id=u'first-user')
+        result.insert({'name': 'Foo'}, 'first user')
+        result.delete(_id='first-user')
         self.assertEquals(result._collection.count(), 0)
 
 # TODO
@@ -427,19 +427,19 @@ class TestContextBySpec(unittest.TestCase):
 
     def test_insert(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user')
+        result.insert({'name': 'Foo'}, 'first user')
         self.assertEquals(result._collection.count(), 2)  # There's one created in `_call_fut`
 
     def test_insert_duplicate_key(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user')
-        result.insert({u'name': u'Foo'}, u'first user')
+        result.insert({'name': 'Foo'}, 'first user')
+        result.insert({'name': 'Foo'}, 'first user')
         self.assertEquals(result._collection.count(), 3)  # There's one created in `_call_fut`
-        self.assertNotEquals(result._collection.find({"_id": u'first-user1'}), None)
+        self.assertNotEquals(result._collection.find({"_id": 'first-user1'}), None)
 
     def test_insert_duplicate_key_increment_false(self):
         result = self._call_fut(request=self.request)
-        result.insert({u'name': u'Foo'}, u'first user', increment=False)
+        result.insert({'name': 'Foo'}, 'first user', increment=False)
         self.assertTrue(result.find(name="Foo").next().get("name", None) == "Foo")
 
     def test_remove(self):
