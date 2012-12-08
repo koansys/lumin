@@ -85,40 +85,29 @@ class Collection(Factory):
             _id = doc['_id']
             while True:
                 try:
-                    oid = self._collection.insert(doc, safe=True)
+                    oid = self._collection.insert(doc)
                     break
                 except self.duplicate_key_error:
                     suffix += 1
                     _id_suffixed = seperator.join([_id, str(suffix)])
                     doc['_id'] = _id_suffixed
         else:
-            oid = self._collection.insert(doc, safe=True)
+            oid = self._collection.insert(doc)
 
         return oid
 
-    def delete(self, _id, safe=False):
+    def delete(self, _id):
         """
         Delete the entry represented by this ``_id`` from this
         :term:`collection`
         """
-        # result = self._collection.remove(_id, safe=safe)  ## Mongomock does not support `safe=True`
         result = self._collection.remove(_id)
 
-        ## Mongomock does not support `safe=True`
-        # # No return value for "unsafe" request
-        # if not safe:
-        #     return
-
-        # if result['err']:
-        #     raise result['err']
-
-        # return bool(result['n'])
-
-    def save(self, to_save, manipulate=True, safe=False):
+    def save(self, to_save, manipulate=True):
         """
         Exposes the native pymongo save method
         """
-        self._collection.save(to_save, manipulate, safe)
+        self._collection.save(to_save, manipulate)
 
 
 class ContextById(Collection):
@@ -290,7 +279,7 @@ class ContextById(Collection):
                 query).limit(limit).sort('_id', DESCENDING)
         return cursor
 
-    def remove(self, safe=False):
+    def remove(self):
         """
         Record current data in history and remove the entry
         represented by this :term:`context` from the
@@ -298,8 +287,8 @@ class ContextById(Collection):
         """
         self.data['deleted'] = True
         self._record()
-        result = self._collection.remove(self._id, safe=safe)
-        if safe and result['err']:
+        result = self._collection.remove(self._id)
+        if result and result['err']:
             raise result['err']
 
     def save(self):
@@ -311,8 +300,8 @@ class ContextById(Collection):
         result = self._collection.update(
             self._spec,
             self.data,
-            manipulate=True,
-            safe=True)
+            manipulate=True)
+
         if result["updatedExisting"] is False:
             raise KeyError("Update failed: Document not found %r" % self._spec)
 
@@ -332,8 +321,7 @@ class ContextById(Collection):
         del self.orig['_id']
         self._collection_history.save(
             self.orig,
-            manipulate=True,
-            safe=True
+            manipulate=True
         )
 
     def _touch(self):
@@ -529,18 +517,18 @@ class ContextBySpec(Collection):
             _id = doc['__name__']
             while True:
                 try:
-                    self._collection.insert(doc, safe=True)
+                    self._collection.insert(doc)
                     break
                 except self.duplicate_key_error as e:
                     suffix += 1
                     __name___suffixed = seperator.join([_id, str(suffix)])
                     doc['__name__'] = __name___suffixed
         else:
-            self._collection.insert(doc, safe=True)
+            self._collection.insert(doc)
 
         return {key: val for key, val in doc.items() if key in self._spec}
 
-    def remove(self, safe=False):
+    def remove(self):
         """
         Record current data in history and remove the entry
         represented by this :term:`context` from the
@@ -548,8 +536,8 @@ class ContextBySpec(Collection):
         """
 
         self._record()
-        result = self._collection.remove(self.oid, safe=safe)
-        if safe and result['err']:
+        result = self._collection.remove(self.oid)
+        if result and result['err']:
             raise result['err']
 
     def save(self):
@@ -560,9 +548,9 @@ class ContextBySpec(Collection):
         result = self._collection.update(
             self._spec,
             self.data,
-            manipulate=True,
-            safe=True)
-        if result["updatedExisting"] is False:
+            manipulate=True)
+
+        if result and result["updatedExisting"] is False:
             raise KeyError("Update failed: Document not found %r" % self._spec)
 
     def update(self, data):
@@ -581,8 +569,7 @@ class ContextBySpec(Collection):
         del self.orig['_id']
         self._collection_history.save(
             self.orig,
-            manipulate=True,
-            safe=True
+            manipulate=True
         )
 
     def _touch(self):
