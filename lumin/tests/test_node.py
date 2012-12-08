@@ -24,7 +24,7 @@ class TestFactory(unittest.TestCase):
 
     def test_default_acl(self):
         result = self._call_fut(request=self.request)
-        default_acl = [['Allow', 'system.Everyone', u'view']]
+        default_acl = [['Allow', 'system.Everyone', 'view']]
         self.assertEquals(result._default__acl__, default_acl)
 
     def test_acl(self):
