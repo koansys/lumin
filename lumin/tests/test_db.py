@@ -4,7 +4,9 @@ import pyramid.testing
 
 # from lumin.testing import Connection
 
-
+## Since making this use MongoClient wtih connection_from_settings
+## we prolly ned to pass in or setup a connectionclass to use the
+## mongomonck connection to make this pass with mock conn object
 # class TestConfiguration(unittest.TestCase):
 #     def setUp(self):
 #         self.config = pyramid.testing.setUp()
