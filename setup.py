@@ -32,7 +32,6 @@ __version__ = '0.5.0'
 
 requires = [
     'colander',
-    'deform',
     'pymongo>=2.4',
     'pyramid',
     ]

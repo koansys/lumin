@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import deform
 import re
 import unicodedata
 
@@ -21,19 +20,19 @@ def normalize(title):
     return re.sub('[-\s]+', '-', url_safe)
 
 
-## buttons
-reset = deform.form.Button(name='reset', title='Reset',
-                           type='reset', value='reset')
+# ## buttons
+# reset = deform.form.Button(name='reset', title='Reset',
+#                            type='reset', value='reset')
 
-##TODO: need to fork deform and make button take onClick
-cancel = deform.form.Button(name='cancel', title='Cancel',
-                            type='button', value='cancel',)
-"""
-To use this cancel button you must include some javascript
-$(document).ready(function () {
-    $(function () {
-           $("#deformcancel").attr('onClick', "history.back()");
-       });
-});
-"""
+# ##TODO: need to fork deform and make button take onClick
+# cancel = deform.form.Button(name='cancel', title='Cancel',
+#                             type='button', value='cancel',)
+# """
+# To use this cancel button you must include some javascript
+# $(document).ready(function () {
+#     $(function () {
+#            $("#deformcancel").attr('onClick', "history.back()");
+#        });
+# });
+# """
 
