@@ -27,7 +27,7 @@ def add_mongodb(event):
     event.request.db = db
     try:
         event.request.fs = GridFS(db)
-    except TypeError:
+    except TypeError:  # pragma: no cover
         ## TODO: need to find a better way
         ## NB: using mock db so we use a mock gfs
         ## not sure if we can add a mock gfs to the
@@ -36,7 +36,7 @@ def add_mongodb(event):
         event.request.fs = MockGridFS(event.request.db)
 
 
-def connection_from_settings(settings):
+def connection_from_settings(settings, pymongo=pymongo):
     """
     :param settings: a `pyramid.config.Configurator.registry.settings`
     instance. It should contain a client class to use for the connection as
@@ -80,6 +80,6 @@ def register_mongodb(config, conn=None):
         config = config.register_mongodb()
     """
 
-    conn = connection_from_settings(config.registry.settings)
-    config.registry.registerUtility(conn, IMongoDBConnection)
-    return conn
+    connection = conn if conn else connection_from_settings(config.registry.settings)
+    config.registry.registerUtility(connection, IMongoDBConnection)
+    return connection

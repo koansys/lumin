@@ -2,58 +2,57 @@ import unittest
 
 import pyramid.testing
 
-# from lumin.testing import Connection
+from lumin.testing import Connection
 
-## Since making this use MongoClient wtih connection_from_settings
-## we prolly ned to pass in or setup a connectionclass to use the
-## mongomonck connection to make this pass with mock conn object
-# class TestConfiguration(unittest.TestCase):
-#     def setUp(self):
-#         self.config = pyramid.testing.setUp()
 
-#     def tearDown(self):
-#         pyramid.testing.tearDown()
+class TestConfiguration(unittest.TestCase):
+    def setUp(self):
+        self.config = pyramid.testing.setUp()
 
-#     def _includelumin(self):
-#         import lumin
-#         self.config.include(lumin)
+    def tearDown(self):
+        pyramid.testing.tearDown()
 
-#     def _registerdb(self):
-#         conn = Connection()
-#         self.config.registry.settings['mongodb.db_name'] = 'frozznob'
-#         self.config.register_mongodb(conn=conn)
+    def _includelumin(self):
+        import lumin
+        self.config.include(lumin)
 
-#     def test_register_mongodb_directive(self):
-#         self._includelumin()
+    def _registerdb(self):
+        conn = Connection()
+        self.config.registry.settings['mongodb.db_name'] = 'frozznob'
+        self.config.registry.settings['mongodb.connection_class'] = 'Connection'
+        self.config.register_mongodb(conn=conn)
 
-#         from lumin.db import IMongoDBConnection
-#         connection = self.config.registry.queryUtility(IMongoDBConnection)
-#         self.assertTrue(connection is None)
+    def test_register_mongodb_directive(self):
+        self._includelumin()
 
-#         # Now, let's register a database connection
-#         self._registerdb()
-#         connection = self.config.registry.queryUtility(IMongoDBConnection)
-#         self.assertTrue(connection is not None)
+        from lumin.db import IMongoDBConnection
+        connection = self.config.registry.queryUtility(IMongoDBConnection)
+        self.assertTrue(connection is None)
 
-#     def test_get_mongodb(self):
-#         self._includelumin()
-#         self._registerdb()
-#         from lumin.db import get_mongodb
-#         from pymongo.database import Database
-#         conn = get_mongodb(self.config.registry)
-#         self.assertTrue(isinstance(conn, Database))
+        # Now, let's register a database connection
+        self._registerdb()
+        connection = self.config.registry.queryUtility(IMongoDBConnection)
+        self.assertTrue(connection is not None)
 
-#     def test_add_mongodb(self):
-#         self._includelumin()
-#         self._registerdb()
-#         import pyramid
-#         request = pyramid.testing.DummyRequest(
-#             path='/',
-#             )
-#         import pyramid
-#         # fire an event to call add_mongodb
-#         self.config.registry.handle(pyramid.events.NewRequest(request))
-#         self.assertTrue(hasattr(request, 'db'))
+    def test_get_mongodb(self):
+        self._includelumin()
+        self._registerdb()
+        from lumin.db import get_mongodb
+        from lumin.testing import Database
+        conn = get_mongodb(self.config.registry)
+        self.assertTrue(isinstance(conn, Database))
+
+    def test_add_mongodb(self):
+        self._includelumin()
+        self._registerdb()
+        import pyramid
+        request = pyramid.testing.DummyRequest(
+            path='/',
+            )
+        import pyramid
+        # fire an event to call add_mongodb
+        self.config.registry.handle(pyramid.events.NewRequest(request))
+        self.assertTrue(hasattr(request, 'db'))
 
 
 class TestIncludeMe(unittest.TestCase):
@@ -68,3 +67,22 @@ class TestIncludeMe(unittest.TestCase):
         self.assertFalse(hasattr(self.config, 'register_mongodb'))
         lumin.includeme(self.config)
         self.assertTrue(hasattr(self.config, 'register_mongodb'))
+
+
+class TestConnectionFromSettings(unittest.TestCase):
+    def setUp(self):
+        self.config = pyramid.testing.setUp()
+
+    def tearDown(self):
+        pyramid.testing.tearDown()
+
+    def _call_fut(self):
+        from lumin.db import connection_from_settings
+        import mongomock
+        settings = {"mongodb.connection_class": "Connection"}
+        return connection_from_settings(settings, pymongo=mongomock)
+
+    def test_it(self):
+        inst = self._call_fut()
+        from mongomock import Connection
+        self.assertTrue(isinstance(inst, Connection))

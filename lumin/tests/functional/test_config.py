@@ -16,7 +16,7 @@ class TestConfiguration(unittest.TestCase):
 
     def _registerdb(self):
         self.config.registry.settings['mongodb.db_name'] = 'frozznob'
-        self.config.register_mongodb('mongodb://localhost')
+        self.config.register_mongodb()
 
     def test_register_mongodb_directive(self):
         self._includelumin()
