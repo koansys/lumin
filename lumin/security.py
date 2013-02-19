@@ -7,7 +7,6 @@ from webob.exc import HTTPFound
 from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
-from pyramid.settings import get_settings
 from pyramid.url import route_url
 
 from lumin.util import TS_FORMAT
@@ -50,7 +49,7 @@ class Login:
             except StopIteration:
                 user = None
             if user and not user.get('disabled', None):
-                settings = get_settings()
+                settings = request.registry.settings
                 challenged = hmac.new(settings['secret'], password, sha256).hexdigest()
                 if challenged == user['password']:
                     headers = remember(request, login)
