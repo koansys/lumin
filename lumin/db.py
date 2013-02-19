@@ -10,8 +10,6 @@ from zope.interface import Interface
 
 from pyramid.events import subscriber
 from pyramid.interfaces import INewRequest
-from pyramid.threadlocal import get_current_registry
-from pyramid.settings import get_settings
 
 from lumin.son import ColanderNullTransformer
 
@@ -25,19 +23,21 @@ except ImportError:
 class IMongoDBConnection(Interface):
     pass
 
-def get_mongodb():
-    settings = get_settings()
+
+def get_mongodb(registry):
+    settings = registry.settings
     db_name = settings['db_name']
-    reg = get_current_registry()
-    db = reg.getUtility(IMongoDBConnection)[db_name]
+    db = registry.getUtility(IMongoDBConnection)[db_name]
     db.add_son_manipulator(ColanderNullTransformer())
     return db
 
+
 @subscriber(INewRequest)
 def add_mongodb(event):
-    db = get_mongodb()
+    db = get_mongodb(event.request.registry)
     event.request.db = db
     event.request.fs = GridFS(db)
+
 
 def register_mongodb(config, db_uri):
     conn = pymongo.Connection(db_uri)
