@@ -45,23 +45,22 @@ def register_mongodb(config, db_uri):
     return conn
 
 ### XXX DO I really want memcached
-class IMemcachedClient(Interface):
-    pass
+# class IMemcachedClient(Interface):
+#     pass
 
-def get_memcached():
-    reg = get_current_registry()
-    mc = reg.queryUtility(IMemcachedClient)
+# def get_memcached():
+#     reg = get_current_registry()
+#     mc = reg.queryUtility(IMemcachedClient)
 
-@subscriber(INewRequest)
-def add_memcached(event):
-    mc = get_memcached()
-    if mc:
-        event.request.mc = mc
+# @subscriber(INewRequest)
+# def add_memcached(event):
+#     mc = get_memcached()
+#     if mc:
+#         event.request.mc = mc
 
-def register_memchached(config, mc_host):
-    mc_conn = memcache.Client(mc_host)
-    config.registerUtility(mc_conn, IMemcachedClient)
-
+# def register_memchached(config, mc_host):
+#     mc_conn = memcache.Client(mc_host)
+#     config.registerUtility(mc_conn, IMemcachedClient)
 
 
 class MongoUploadTmpStore(object):
